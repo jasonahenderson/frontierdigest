@@ -8,6 +8,7 @@ import type {
   WeeklyDigest,
   SourceBundle,
   ProfileConfig,
+  PromptContext,
 } from "../types/index.js";
 import type { Store } from "../persist/index.js";
 import { generateDigestEntry } from "./digest-entry.js";
@@ -31,6 +32,7 @@ export async function synthesize(
   rawItemCount: number,
   canonicalItemCount: number,
   promptsDir?: string,
+  promptContext?: PromptContext,
 ): Promise<SynthesisResult> {
   const resolvedPromptsDir =
     promptsDir ?? resolve(import.meta.dirname, "../../../../prompts");
@@ -45,7 +47,7 @@ export async function synthesize(
   consola.info("Step 1: Generating digest entries...");
   const entryOutputs = await Promise.all(
     clusters.map((cluster) =>
-      generateDigestEntry(cluster, interestList, profileName, resolvedPromptsDir),
+      generateDigestEntry(cluster, interestList, profileName, resolvedPromptsDir, promptContext),
     ),
   );
 
@@ -75,6 +77,7 @@ export async function synthesize(
         clusters[i],
         interestList,
         resolvedPromptsDir,
+        promptContext,
       ),
     ),
   );
@@ -83,7 +86,7 @@ export async function synthesize(
   consola.info("Step 3: Generating source bundles...");
   const sourceBundleSources = await Promise.all(
     clusters.map((cluster, i) =>
-      generateSourceBundle(cluster, entries[i].title, resolvedPromptsDir),
+      generateSourceBundle(cluster, entries[i].title, resolvedPromptsDir, promptContext),
     ),
   );
 
@@ -120,6 +123,7 @@ export async function synthesize(
         cluster,
         previousTopic,
         resolvedPromptsDir,
+        promptContext,
       );
     }),
   );
@@ -149,6 +153,7 @@ export async function synthesize(
       topItemCount: entries.length,
     },
     resolvedPromptsDir,
+    promptContext,
   );
 
   // --- Step 6: Assemble WeeklyDigest ---

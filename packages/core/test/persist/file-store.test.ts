@@ -171,7 +171,7 @@ describe("FileStore", () => {
       await store.saveRawItems("2026-03-23", "test-source-1", rawItems);
 
       // Verify via filesystem
-      const filePath = join(tmpDir, "data", "raw", "2026", "03", "23", "test-source-1.json");
+      const filePath = join(tmpDir, "raw", "2026", "03", "23", "test-source-1.json");
       const content = JSON.parse(await readFile(filePath, "utf-8"));
       expect(content).toHaveLength(2);
       expect(content[0].title).toBe("Test");
@@ -217,7 +217,7 @@ describe("FileStore", () => {
       const markdown = "# Weekly Digest\n\nTest content.";
       await store.saveDigestMarkdown("2026-03-23", markdown);
 
-      const filePath = join(tmpDir, "data", "digests", "2026", "03", "23", "weekly.md");
+      const filePath = join(tmpDir, "digests", "2026", "03", "23", "weekly.md");
       const content = await readFile(filePath, "utf-8");
       expect(content).toBe(markdown);
     });

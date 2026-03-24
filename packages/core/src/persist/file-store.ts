@@ -228,7 +228,7 @@ export class FileStore implements Store {
    * Scans the digests directory tree (YYYY/MM/DD) and returns all dates found.
    */
   private async scanDigestDates(): Promise<string[]> {
-    const base = join(this.rootDir, "data", "digests");
+    const base = join(this.rootDir, "digests");
     if (!(await dirExists(base))) return [];
 
     const dates: string[] = [];

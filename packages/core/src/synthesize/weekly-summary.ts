@@ -1,4 +1,4 @@
-import type { DigestEntry } from "../types/index.js";
+import type { DigestEntry, PromptContext } from "../types/index.js";
 import { loadPrompt } from "./prompt-loader.js";
 import { llmGenerate } from "./llm.js";
 import { consola } from "consola";
@@ -22,6 +22,7 @@ export interface WeeklySummaryOutput {
 export async function generateWeeklySummary(
   input: WeeklySummaryInput,
   promptsDir: string,
+  promptContext?: PromptContext,
 ): Promise<WeeklySummaryOutput> {
   consola.info("Generating weekly summary...");
 
@@ -45,6 +46,7 @@ export async function generateWeeklySummary(
       entries_json: JSON.stringify(entriesForPrompt, null, 2),
     },
     promptsDir,
+    promptContext,
   );
 
   const raw = await llmGenerate(system, user);

@@ -38,13 +38,14 @@ export default defineCommand({
 
       consola.info("Generating weekly digest from ingested data...");
 
-      let profile, sources;
+      let profile, sources, promptContext;
       if (args.domain) {
         const { loadDomain, domainToProfileAndSources } = await import("@frontier-digest/core");
         const domainConfig = await loadDomain(args.domain);
         const resolved = domainToProfileAndSources(domainConfig);
         profile = resolved.profile;
         sources = resolved.sources;
+        promptContext = resolved.promptContext;
         consola.info(`Domain: ${domainConfig.domain.name}`);
       } else {
         const { loadProfile, loadSources } = await import("@frontier-digest/core");
@@ -96,6 +97,8 @@ export default defineCommand({
         today,
         normalizedItems.length,
         dedupeResult.total_canonical,
+        undefined, // promptsDir - use default
+        promptContext,
       );
 
       // Persist

@@ -8,6 +8,7 @@ import { formatDate, pluralize, truncate } from "../formatter.js";
 export function buildDigestBlocks(
   digest: WeeklyDigest,
   entries: DigestEntry[],
+  digestName?: string,
 ): KnownBlock[] {
   const dateLabel = formatDate(digest.generated_at);
 
@@ -17,7 +18,7 @@ export function buildDigestBlocks(
       type: "header",
       text: {
         type: "plain_text",
-        text: `Weekly AI Frontier Digest \u2014 ${dateLabel}`,
+        text: `${digestName ?? "Weekly Digest"} \u2014 ${dateLabel}`,
         emoji: false,
       },
     },

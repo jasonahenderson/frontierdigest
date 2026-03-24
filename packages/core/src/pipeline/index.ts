@@ -7,6 +7,7 @@ import type {
   ScoredItem,
   TopicCluster,
   DedupeResult,
+  PromptContext,
 } from "../types/index.js";
 import type { Store } from "../persist/index.js";
 import type { RawItem } from "../normalize/index.js";
@@ -26,6 +27,7 @@ export async function runWeeklyPipeline(
   profile: ProfileConfig,
   sources: SourceConfig[],
   store: Store,
+  promptContext?: PromptContext,
 ): Promise<RunManifest> {
   const today = new Date().toISOString().slice(0, 10);
   const runId = generateRunId(today);
@@ -170,6 +172,8 @@ export async function runWeeklyPipeline(
         today,
         rawItems.length,
         dedupeResult?.total_canonical ?? normalizedItems.length,
+        undefined, // promptsDir - use default
+        promptContext,
       );
       tracker.completeStep(stepSynthesize, synthesisResult.entries.length);
       consola.success(

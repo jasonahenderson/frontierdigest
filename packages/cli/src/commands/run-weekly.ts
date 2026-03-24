@@ -28,13 +28,14 @@ export default defineCommand({
 
       consola.info("Running weekly digest pipeline...");
 
-      let profile, sources;
+      let profile, sources, promptContext;
       if (args.domain) {
         const { loadDomain, domainToProfileAndSources } = await import("@frontier-digest/core");
         const domainConfig = await loadDomain(args.domain);
         const resolved = domainToProfileAndSources(domainConfig);
         profile = resolved.profile;
         sources = resolved.sources;
+        promptContext = resolved.promptContext;
         consola.info(`Domain: ${domainConfig.domain.name}`);
       } else {
         const { loadProfile, loadSources } = await import("@frontier-digest/core");
@@ -46,7 +47,7 @@ export default defineCommand({
 
       const store = createStore(profile.outputs.root_dir);
 
-      const manifest = await runWeeklyPipeline(profile, sources, store);
+      const manifest = await runWeeklyPipeline(profile, sources, store, promptContext);
 
       consola.box(`Run Complete: ${manifest.id}`);
       consola.info(`Status: ${manifest.status}`);

@@ -1,4 +1,4 @@
-import type { DigestEntry, TopicCluster, TopicPack } from "../types/index.js";
+import type { DigestEntry, TopicCluster, TopicPack, PromptContext } from "../types/index.js";
 import { loadPrompt } from "./prompt-loader.js";
 import { llmGenerate } from "./llm.js";
 import { consola } from "consola";
@@ -15,6 +15,7 @@ export async function generateComparison(
   currentCluster: TopicCluster,
   previousTopic: TopicPack | null,
   promptsDir: string,
+  promptContext?: PromptContext,
 ): Promise<ComparisonOutput> {
   consola.info(`Generating comparison for: ${currentEntry.title}`);
 
@@ -29,6 +30,7 @@ export async function generateComparison(
           : "null",
     },
     promptsDir,
+    promptContext,
   );
 
   const raw = await llmGenerate(system, user);

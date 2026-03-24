@@ -32,7 +32,7 @@ export default defineCommand({
 
       consola.info("Posting weekly digest to Slack...");
 
-      let profile, slackChannel: string | undefined, slackPostThreads: boolean | undefined;
+      let profile, slackChannel: string | undefined, slackPostThreads: boolean | undefined, domainName: string | undefined;
       if (args.domain) {
         const { loadDomain, domainToProfileAndSources } = await import("@frontier-digest/core");
         const domainConfig = await loadDomain(args.domain);
@@ -40,6 +40,7 @@ export default defineCommand({
         profile = resolved.profile;
         slackChannel = domainConfig.domain.slack?.channel;
         slackPostThreads = domainConfig.domain.slack?.post_threads;
+        domainName = domainConfig.domain.name;
         consola.info(`Domain: ${domainConfig.domain.name}`);
       } else {
         const { loadProfile } = await import("@frontier-digest/core");
@@ -97,7 +98,7 @@ export default defineCommand({
       consola.info(`Posting to channel: ${channel}`);
       consola.info(`Digest: ${digest.id} (${digest.generated_at})`);
 
-      const result = await postWeeklyDigest(digest, entries, slackConfig);
+      const result = await postWeeklyDigest(digest, entries, slackConfig, domainName);
 
       if (result.ok) {
         consola.success(`Posted to ${result.channel} (ts: ${result.ts})`);

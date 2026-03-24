@@ -1,4 +1,4 @@
-import type { DigestEntry, TopicCluster } from "../types/index.js";
+import type { DigestEntry, TopicCluster, PromptContext } from "../types/index.js";
 import { loadPrompt } from "./prompt-loader.js";
 import { llmGenerate } from "./llm.js";
 import { consola } from "consola";
@@ -16,6 +16,7 @@ export async function generateTopicExpansion(
   cluster: TopicCluster,
   interestList: string[],
   promptsDir: string,
+  promptContext?: PromptContext,
 ): Promise<TopicExpandOutput> {
   consola.info(`Generating topic expansion for: ${entry.title}`);
 
@@ -27,6 +28,7 @@ export async function generateTopicExpansion(
       cluster_json: JSON.stringify(cluster, null, 2),
     },
     promptsDir,
+    promptContext,
   );
 
   const raw = await llmGenerate(system, user);

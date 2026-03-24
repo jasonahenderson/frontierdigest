@@ -1,4 +1,4 @@
-import type { TopicCluster } from "../types/index.js";
+import type { TopicCluster, PromptContext } from "../types/index.js";
 import { loadPrompt } from "./prompt-loader.js";
 import { llmGenerate } from "./llm.js";
 import { consola } from "consola";
@@ -16,6 +16,7 @@ export async function generateDigestEntry(
   interestList: string[],
   profileName: string,
   promptsDir: string,
+  promptContext?: PromptContext,
 ): Promise<DigestEntryOutput> {
   consola.info(`Generating digest entry for cluster: ${cluster.label}`);
 
@@ -27,6 +28,7 @@ export async function generateDigestEntry(
       cluster_json: JSON.stringify(cluster, null, 2),
     },
     promptsDir,
+    promptContext,
   );
 
   const raw = await llmGenerate(system, user);

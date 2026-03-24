@@ -21,15 +21,16 @@ export async function postWeeklyDigest(
   digest: WeeklyDigest,
   entries: DigestEntry[],
   config: SlackConfig,
+  digestName?: string,
 ): Promise<SlackPostResult> {
   const client = new WebClient(config.bot_token);
-  const blocks = buildDigestBlocks(digest, entries);
+  const blocks = buildDigestBlocks(digest, entries, digestName);
 
   try {
     const result = await client.chat.postMessage({
       channel: config.channel,
       blocks,
-      text: `Weekly AI Frontier Digest — ${digest.generated_at}`,
+      text: `${digestName ?? "Weekly Digest"} — ${digest.generated_at}`,
     });
 
     return {
