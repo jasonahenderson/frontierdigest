@@ -5,7 +5,7 @@ const main = defineCommand({
   meta: {
     name: "frontier-digest",
     version: "0.1.0",
-    description: "Weekly AI frontier digest system",
+    description: "Domain-configurable weekly research digest system",
   },
   subCommands: {
     init: () => import("./commands/init.js").then(m => m.default),

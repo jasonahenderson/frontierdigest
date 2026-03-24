@@ -1,6 +1,6 @@
 # Frontier Digest
 
-A weekly AI frontier digest system that collects developments from configured RSS sources, synthesizes them into a ranked digest, and delivers it to Slack with thread-based drill-down.
+A domain-configurable weekly research digest system. Track developments in any topic area — AI, quantum computing, neuroscience, travel, or anything with a meaningful source stream. Collects from RSS feeds, synthesizes via LLM, and delivers to Slack with thread-based drill-down.
 
 ## Quick Start
 
@@ -18,128 +18,156 @@ cd frontierdigest
 pnpm install
 ```
 
-### Configure
+### Option A: Interactive Setup (recommended)
 
-Copy the sample configs and edit them:
-
-```bash
-cp configs/profile.sample.yaml configs/profile.yaml
-cp configs/sources.sample.yaml configs/sources.yaml
-cp configs/slack.sample.yaml configs/slack.yaml
-```
-
-Set required environment variables:
+The init wizard generates a complete domain config from a natural-language topic description:
 
 ```bash
 export ANTHROPIC_API_KEY="sk-ant-..."
-export SLACK_BOT_TOKEN="xoxb-..."
-export SLACK_SIGNING_SECRET="..."
-export SLACK_APP_TOKEN="xapp-..."   # optional, enables Socket Mode
+bun run packages/cli/src/index.ts init
+```
+
+It will ask what you want to track, generate interests/sources/prompts via LLM, and write the config for you.
+
+### Option B: Use a Template
+
+```bash
+bun run packages/cli/src/index.ts init --template ai-frontier
+bun run packages/cli/src/index.ts init --template quantum-computing
+bun run packages/cli/src/index.ts init --template brain-science
+```
+
+### Option C: Manual Config
+
+Copy and edit a sample domain config:
+
+```bash
+cp configs/domains/ai-frontier.yaml configs/domains/my-domain.yaml
+# Edit the file to customize interests, sources, and Slack channel
+```
+
+### Set Environment Variables
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+export SLACK_BOT_TOKEN="xoxb-..."        # for Slack delivery
+export SLACK_SIGNING_SECRET="..."         # for Slack delivery
+export SLACK_APP_TOKEN="xapp-..."         # optional, enables Socket Mode
 ```
 
 ### Run
 
-Run the full weekly pipeline (ingest through synthesis and persistence):
-
 ```bash
-bun run cli run weekly --profile configs/profile.yaml --sources configs/sources.yaml
+# Full weekly pipeline with a domain config
+bun run packages/cli/src/index.ts run weekly --domain configs/domains/ai-frontier.yaml
+
+# Post the latest digest to Slack
+bun run packages/cli/src/index.ts slack post weekly --domain configs/domains/ai-frontier.yaml
 ```
 
-Post the latest digest to Slack:
+## Domain Configs
 
-```bash
-bun run cli slack post weekly --profile configs/profile.yaml
+A domain config bundles everything needed to run a digest for a specific topic:
+
+```yaml
+domain:
+  id: quantum-computing
+  name: "Quantum Computing Frontier"
+
+  prompt_context:
+    persona: "You are a quantum computing research analyst..."
+    focus: "quantum computing hardware, algorithms, and applications"
+
+  profile:
+    interests:
+      include: [quantum error correction, topological qubits, ...]
+      exclude: [quantum mysticism, ...]
+    ranking:
+      max_digest_items: 8
+
+  sources:
+    - id: arxiv-quant-ph
+      type: rss
+      url: http://export.arxiv.org/rss/quant-ph
+      ...
+
+  slack:
+    channel: "#quantum-radar"
 ```
+
+Multiple domains run independently with separate sources, prompt personas, Slack channels, and data storage.
+
+See `configs/domains/` for complete examples.
 
 ## CLI Commands
 
 ```bash
-bun run cli <command>
+bun run packages/cli/src/index.ts <command>
 ```
 
 | Command | Description |
 |---------|-------------|
-| `ingest` | Fetch items from configured RSS sources |
-| `digest weekly` | Generate a weekly digest from ingested items |
-| `run weekly` | Run the full pipeline (ingest + digest + persist) |
-| `slack post weekly` | Post the latest digest to Slack |
+| `init` | Interactive setup wizard — generates a domain config from natural language |
+| `init --template <name>` | Create a config from a built-in template |
+| `run weekly --domain <path>` | Run the full pipeline (ingest + digest + persist) |
+| `ingest --domain <path>` | Fetch items from configured RSS sources |
+| `digest weekly --domain <path>` | Generate a digest from already-ingested items |
+| `slack post weekly --domain <path>` | Post the latest digest to Slack |
 | `topic show <id>` | Display a topic pack |
 | `topic sources <id>` | Display sources for a topic |
 | `diff weekly` | Compare current and previous weekly digests |
 | `list digests` | List all generated digests |
 | `inspect run <id>` | Show details of a pipeline run |
-| `validate` | Validate configuration files |
+| `validate --domain <path>` | Validate a domain config file |
 
-## Configuration
+All commands also accept `--profile` + `--sources` flags for backward compatibility with separate config files.
 
-Configuration uses three YAML files in `configs/`:
+## How It Works
 
-- **`profile.yaml`** -- Interest topics, scoring weights, lookback window, output settings
-- **`sources.yaml`** -- RSS feed registry with URLs, weights, and tags
-- **`slack.yaml`** -- Slack channel, bot token references, and threading settings
+The pipeline runs 8 steps:
 
-See the `.sample.yaml` files for annotated examples.
-
-### Scoring Weights
-
-The profile config controls how items are ranked:
-
-```yaml
-ranking:
-  max_digest_items: 8
-  relevance_weight: 0.4
-  source_weight: 0.2
-  recency_weight: 0.2
-  reinforcement_weight: 0.2
-  primary_source_bonus: 0.2
-```
-
-## Architecture
-
-The system has four layers: **Collection**, **Preparation**, **Synthesis**, and **Delivery**. The pipeline runs 8 steps: ingest, normalize, dedupe, score, cluster, synthesize, persist, and save manifest.
+1. **Ingest** — Fetch RSS feeds within the lookback window
+2. **Normalize** — Common schema, canonical URLs, content hashing
+3. **Dedupe** — URL matching, title similarity, content fingerprinting
+4. **Score** — Relevance, recency, source quality, cross-source reinforcement
+5. **Cluster** — Group related items into digest topics
+6. **Synthesize** — LLM generates summaries, expansions, source bundles, comparisons
+7. **Persist** — Write all artifacts to disk (JSON + Markdown)
+8. **Deliver** — Post to Slack with Expand/Sources/Compare drill-down buttons
 
 LLM calls are isolated to the synthesis step. Slack drill-down reads pre-generated artifacts and never triggers LLM calls.
-
-See [docs/architecture.md](docs/architecture.md) for the full architecture overview.
 
 ## Project Structure
 
 ```
 packages/
-  core/    Domain logic, pipeline, types, persistence
-  cli/     CLI commands (citty)
-  slack/   Slack formatting and interaction handling
-configs/   Sample YAML configuration files
-prompts/   LLM prompt templates (Markdown with {{variable}} placeholders)
-data/      Generated artifacts (raw, normalized, digests, topics, runs)
-docs/      Documentation
+  core/      Domain logic, pipeline, types, persistence
+  cli/       CLI commands (citty)
+  slack/     Slack formatting and interaction handling (Bolt)
+configs/
+  domains/   Domain config files (ai-frontier, quantum, brain-science)
+prompts/     LLM prompt templates (Markdown with {{persona}}, {{focus}} variables)
+data/        Generated artifacts — namespaced by domain ID (gitignored)
+docs/        Documentation
+skills/      OpenClaw skill wrapper (placeholder)
 ```
 
 ## Documentation
 
-- [Architecture](docs/architecture.md) -- System overview, data flow, design decisions
-- [Slack Contract](docs/slack-contract.md) -- Permissions, message format, interaction handlers
-- [Security](docs/security.md) -- Secrets, permissions, data storage
-- [Tech Spec](docs/tech-spec.md) -- Full MVP specification
+- [Architecture](docs/architecture.md) — System overview, data flow, design decisions
+- [Slack Contract](docs/slack-contract.md) — Permissions, message format, interaction handlers
+- [Security](docs/security.md) — Secrets, permissions, data storage
+- [Tech Spec](docs/tech-spec.md) — Full MVP specification
 
-## Contributing
-
-1. Fork the repository and create a feature branch.
-2. Install dependencies: `pnpm install`
-3. Run tests: `bun test`
-4. Run type checking: `pnpm run lint`
-5. Ensure all tests pass before submitting a pull request.
-
-### Development Commands
+## Development
 
 ```bash
 pnpm install          # Install dependencies
-bun test              # Run all tests
-pnpm run lint         # TypeScript type checking (tsc --noEmit)
-bun run cli           # Run the CLI
+bun test              # Run all tests (138 tests)
+pnpm run lint         # TypeScript type checking
 ```
 
-Types are defined as Zod schemas in `packages/core/src/types/`. When adding new data contracts, define the Zod schema first and infer the TypeScript type from it.
+Types are defined as Zod schemas in `packages/core/src/types/`. All TypeScript types are inferred from Zod — never hand-maintained.
 
 ## License
 
