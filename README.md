@@ -47,10 +47,23 @@ Or describe any topic and the init wizard generates a custom config with relevan
 ```bash
 git clone https://github.com/jasonahenderson/frontierdigest.git
 cd frontierdigest
-pnpm install
+./setup.sh
 ```
 
-> **Requires:** [Bun](https://bun.sh/), [pnpm](https://pnpm.io/), and an [Anthropic API key](https://console.anthropic.com/)
+The setup script checks prerequisites (Bun >= 1.0, pnpm >= 9, Node.js >= 20), installs dependencies, creates your `.env` file, and validates the installation. Run `./setup.sh --help` for options.
+
+<details>
+<summary>Manual install</summary>
+
+```bash
+pnpm install
+cp .env.example .env
+# Edit .env with your API keys
+```
+
+</details>
+
+> **Requires:** [Bun](https://bun.sh/) >= 1.0, [pnpm](https://pnpm.io/) >= 9, [Node.js](https://nodejs.org/) >= 20
 
 ### 2. Configure
 
@@ -67,10 +80,16 @@ frontier-digest init --template ai-frontier
 cp configs/domains/ai-frontier.yaml configs/domains/my-domain.yaml
 ```
 
-Set your API key:
+Set your LLM provider API key:
 
 ```bash
+# Anthropic (default)
 export ANTHROPIC_API_KEY="sk-ant-..."
+
+# Or use a different provider — see "LLM Providers" below
+export OPENAI_API_KEY="sk-..."           # OpenAI
+export GOOGLE_GENERATIVE_AI_API_KEY="…"  # Google Gemini
+# Ollama needs no key — just a running local server
 ```
 
 For Slack delivery (optional):
@@ -103,7 +122,8 @@ frontier-digest slack post weekly --domain configs/domains/ai-frontier.yaml
 ```
 RSS Feeds ──> Ingest ──> Normalize ──> Dedupe ──> Score ──> Cluster ──> Synthesize ──> Slack
                                                                             |
-                                                                      Anthropic API
+                                                                      LLM Provider
+                                                          (Anthropic, OpenAI, Ollama, Google)
 ```
 
 **8 pipeline steps**, each producing inspectable artifacts:
@@ -125,7 +145,7 @@ LLM calls are isolated to synthesis. Everything else is deterministic. Slack dri
 
 ## Domain Configs
 
-A domain config is a single YAML file that bundles everything: topic interests, RSS sources, LLM persona, scoring weights, and Slack routing.
+A domain config is a single YAML file that bundles everything: topic interests, RSS sources, LLM provider, prompt persona, scoring weights, and Slack routing.
 
 ```yaml
 domain:
@@ -135,6 +155,10 @@ domain:
   prompt_context:
     persona: "You are a quantum computing research analyst..."
     focus: "quantum computing hardware, algorithms, and applications"
+
+  llm:
+    provider: anthropic          # anthropic | openai | ollama | google | openai-compatible
+    model: claude-sonnet-4-20250514  # optional — uses provider default if omitted
 
   profile:
     interests:
@@ -155,7 +179,57 @@ domain:
     channel: "#quantum-radar"
 ```
 
-Domains are fully isolated — separate sources, storage (`data/<domain-id>/`), and Slack channels. Run as many as you want.
+Domains are fully isolated — separate sources, storage (`data/<domain-id>/`), Slack channels, and LLM configs. Run as many as you want.
+
+---
+
+## LLM Providers
+
+Frontier Digest supports multiple LLM providers via the [Vercel AI SDK](https://sdk.vercel.ai/). Configure per-domain in the `llm:` section.
+
+| Provider | Config value | Default model | API key env var | Notes |
+|----------|-------------|---------------|-----------------|-------|
+| Anthropic | `anthropic` | `claude-sonnet-4-20250514` | `ANTHROPIC_API_KEY` | Default provider |
+| OpenAI | `openai` | `gpt-4o` | `OPENAI_API_KEY` | |
+| Ollama | `ollama` | `llama3.1` | None (local) | Free, private, no API key |
+| Google | `google` | `gemini-2.0-flash` | `GOOGLE_GENERATIVE_AI_API_KEY` | |
+| Custom | `openai-compatible` | `gpt-4o` | `OPENAI_API_KEY` | Requires `base_url` |
+
+### Examples
+
+```yaml
+# Use OpenAI GPT-4o
+llm:
+  provider: openai
+
+# Use a local Ollama model (free, no API key)
+llm:
+  provider: ollama
+  model: llama3.1
+  base_url: http://localhost:11434  # default Ollama address
+
+# Use Google Gemini
+llm:
+  provider: google
+  model: gemini-2.0-flash
+
+# Use a custom OpenAI-compatible endpoint (e.g., Together, Groq, vLLM)
+llm:
+  provider: openai-compatible
+  base_url: https://api.together.xyz/v1
+  model: meta-llama/Llama-3-70b-chat-hf
+
+# Advanced: custom temperature and token limits
+llm:
+  provider: anthropic
+  model: claude-sonnet-4-20250514
+  temperature: 0.3
+  max_tokens: 4096
+```
+
+If no `llm:` section is provided, Frontier Digest defaults to Anthropic with Claude Sonnet 4.
+
+See [docs/llm-providers.md](docs/llm-providers.md) for the full provider guide.
 
 ---
 
@@ -203,8 +277,8 @@ skills/        OpenClaw integration (placeholder)
 | Validation | [Zod](https://zod.dev/) (types inferred, never hand-written) |
 | CLI | [citty](https://github.com/unjs/citty) |
 | Slack | [@slack/bolt](https://slack.dev/bolt-js/) |
-| LLM | [Anthropic SDK](https://docs.anthropic.com/en/docs/sdks) |
-| Testing | bun:test (138 tests) |
+| LLM | [Vercel AI SDK](https://sdk.vercel.ai/) — Anthropic, OpenAI, Ollama, Google |
+| Testing | bun:test (184 tests) |
 
 ---
 
@@ -212,6 +286,7 @@ skills/        OpenClaw integration (placeholder)
 
 - **[Architecture](docs/architecture.md)** — System layers, data flow, design decisions
 - **[Slack Contract](docs/slack-contract.md)** — Permissions, message format, drill-down actions
+- **[LLM Providers](docs/llm-providers.md)** — Provider setup, model options, local vs cloud
 - **[Security](docs/security.md)** — Secrets management, least-privilege Slack setup
 - **[Tech Spec](docs/tech-spec.md)** — Full MVP specification
 - **[Contributing](CONTRIBUTING.md)** — Setup, conventions, how to add source types and domains

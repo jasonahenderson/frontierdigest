@@ -3,6 +3,7 @@ import consola from "consola";
 import { writeFile, mkdir, copyFile, access } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import { stringify as yamlStringify } from "yaml";
+import type { LLMConfig } from "@frontier-digest/core";
 
 export default defineCommand({
   meta: {
@@ -85,23 +86,144 @@ export default defineCommand({
       }
     }
 
+    // Step 2.5: LLM provider selection
+    const availableProviders: Array<{ value: string; label: string; hint?: string }> = [];
+
+    // Check for Ollama (local, free)
+    let ollamaAvailable = false;
+    try {
+      const resp = await fetch("http://localhost:11434/api/tags", { signal: AbortSignal.timeout(2000) });
+      if (resp.ok) {
+        ollamaAvailable = true;
+        const data = await resp.json() as { models?: Array<{ name: string }> };
+        const modelCount = data.models?.length ?? 0;
+        availableProviders.push({
+          value: "ollama",
+          label: `Ollama (local, free) — ${modelCount} model${modelCount !== 1 ? "s" : ""} installed`,
+          hint: "No API key needed",
+        });
+      }
+    } catch {
+      // Ollama not running
+    }
+
+    // Check for API keys in env
+    if (process.env.ANTHROPIC_API_KEY) {
+      availableProviders.push({
+        value: "anthropic",
+        label: "Anthropic (Claude) — API key detected",
+      });
+    } else {
+      availableProviders.push({
+        value: "anthropic",
+        label: "Anthropic (Claude) — requires API key",
+        hint: "https://console.anthropic.com/",
+      });
+    }
+
+    if (process.env.OPENAI_API_KEY) {
+      availableProviders.push({
+        value: "openai",
+        label: "OpenAI (GPT-4o) — API key detected",
+      });
+    } else {
+      availableProviders.push({
+        value: "openai",
+        label: "OpenAI (GPT-4) — requires API key",
+        hint: "https://platform.openai.com/api-keys",
+      });
+    }
+
+    if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      availableProviders.push({
+        value: "google",
+        label: "Google (Gemini) — API key detected",
+      });
+    }
+
+    // Ask user to pick provider
+    const providerChoice = await consola.prompt("Which AI provider do you want to use?", {
+      type: "select",
+      options: availableProviders.map(p => p.label),
+    });
+
+    // Map back to provider value
+    const selectedProvider = availableProviders.find(p => p.label === providerChoice);
+    const providerValue = selectedProvider?.value ?? "anthropic";
+
+    // Build LLM config for the selected provider
+    const llmConfig: LLMConfig = { provider: providerValue as LLMConfig["provider"] };
+
+    // For Ollama, ask which model to use
+    if (providerValue === "ollama" && ollamaAvailable) {
+      try {
+        const resp = await fetch("http://localhost:11434/api/tags");
+        const data = await resp.json() as { models?: Array<{ name: string }> };
+        const models = data.models?.map(m => m.name) ?? [];
+        if (models.length > 0) {
+          const modelChoice = await consola.prompt("Which Ollama model?", {
+            type: "select",
+            options: models,
+          });
+          if (modelChoice && typeof modelChoice === "string") {
+            llmConfig.model = modelChoice;
+          }
+        } else {
+          consola.warn("No models installed. Run: ollama pull llama3.1");
+          llmConfig.model = "llama3.1";
+        }
+      } catch {
+        llmConfig.model = "llama3.1";
+      }
+    }
+
+    // For providers requiring API keys, check they're set
+    if (providerValue === "anthropic" && !process.env.ANTHROPIC_API_KEY) {
+      consola.warn("ANTHROPIC_API_KEY not set. You'll need it to run the digest.");
+      consola.info("Get one at: https://console.anthropic.com/");
+      consola.info("Then: export ANTHROPIC_API_KEY=sk-ant-...");
+    } else if (providerValue === "openai" && !process.env.OPENAI_API_KEY) {
+      consola.warn("OPENAI_API_KEY not set. You'll need it to run the digest.");
+      consola.info("Get one at: https://platform.openai.com/api-keys");
+    } else if (providerValue === "google" && !process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      consola.warn("GOOGLE_GENERATIVE_AI_API_KEY not set.");
+      consola.info("Get one at: https://aistudio.google.com/apikey");
+    }
+
     // Step 3: Generate config via LLM
     consola.start("Generating domain configuration...");
 
     try {
       const { generateDomainConfig } = await import("@frontier-digest/core");
-      const result = await generateDomainConfig({
-        topicDescription: topic,
-        slackEnabled: !!wantSlack,
-        slackChannel: slackChannel,
-      });
+      const result = await generateDomainConfig(
+        {
+          topicDescription: topic,
+          slackEnabled: !!wantSlack,
+          slackChannel: slackChannel,
+        },
+        llmConfig,
+      );
 
       const config = result.domainConfig;
+
+      // Inject the selected LLM provider into the config
+      const configWithLLM = {
+        ...config,
+        domain: {
+          ...config.domain,
+          llm: {
+            provider: llmConfig.provider,
+            ...(llmConfig.model ? { model: llmConfig.model } : {}),
+            ...(llmConfig.base_url ? { base_url: llmConfig.base_url } : {}),
+          },
+        },
+      };
 
       // Step 4: Show summary
       consola.log("");
       consola.info(`Domain: ${config.domain.name}`);
       consola.info(`ID: ${config.domain.id}`);
+      consola.info(`LLM: ${llmConfig.provider}${llmConfig.model ? ` (${llmConfig.model})` : ""}`);
       consola.log("");
       consola.info("Interests (include):");
       for (const interest of config.domain.profile.interests.include) {
@@ -133,7 +255,7 @@ export default defineCommand({
         args.output ?? `configs/domains/${result.suggestedFilename}`;
       await mkdir(dirname(resolve(outputPath)), { recursive: true });
 
-      const yamlContent = yamlStringify(config, { lineWidth: 120 });
+      const yamlContent = yamlStringify(configWithLLM, { lineWidth: 120 });
       await writeFile(resolve(outputPath), yamlContent, "utf-8");
 
       consola.success(`Config written to ${outputPath}`);
@@ -159,19 +281,20 @@ export default defineCommand({
         `  frontier-digest run weekly --domain ${outputPath}`,
       );
     } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message.includes("ANTHROPIC_API_KEY")
-      ) {
-        consola.error(
-          "ANTHROPIC_API_KEY environment variable is required for the init wizard.",
-        );
-        consola.info(
-          "Set it with: export ANTHROPIC_API_KEY=your-key-here",
-        );
-        consola.info(
-          "Or use a template: frontier-digest init --template ai-frontier",
-        );
+      if (error instanceof Error && (
+        error.message.includes("API_KEY") ||
+        error.message.includes("api key") ||
+        error.message.includes("401") ||
+        error.message.includes("403")
+      )) {
+        consola.error("API key issue — check that your provider's API key is set correctly.");
+        consola.info("Or use a template (no API key needed): frontier-digest init --template ai-frontier");
+      } else if (error instanceof Error && error.message.includes("ECONNREFUSED")) {
+        consola.error("Could not connect to the LLM provider.");
+        if (providerValue === "ollama") {
+          consola.info("Make sure Ollama is running: ollama serve");
+        }
+        consola.info("Or use a template: frontier-digest init --template ai-frontier");
       } else {
         consola.error("Failed to generate config:", error);
       }
