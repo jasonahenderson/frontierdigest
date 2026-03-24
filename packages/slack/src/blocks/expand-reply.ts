@@ -1,5 +1,6 @@
 import type { KnownBlock } from "@slack/types";
 import type { TopicPack } from "@frontier-digest/core";
+import { escapeSlackMrkdwn } from "@frontier-digest/core";
 
 /**
  * Build Slack Block Kit blocks for the Expand drill-down (thread reply).
@@ -18,7 +19,7 @@ export function buildExpandBlocks(pack: TopicPack): KnownBlock[] {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: pack.expanded_summary,
+        text: escapeSlackMrkdwn(pack.expanded_summary),
       },
     },
   ];
@@ -31,7 +32,7 @@ export function buildExpandBlocks(pack: TopicPack): KnownBlock[] {
         type: "mrkdwn",
         text:
           "*Why included:*\n" +
-          pack.why_included.map((item) => `\u2022 ${item}`).join("\n"),
+          pack.why_included.map((item) => `\u2022 ${escapeSlackMrkdwn(item)}`).join("\n"),
       },
     });
   }
@@ -44,7 +45,7 @@ export function buildExpandBlocks(pack: TopicPack): KnownBlock[] {
         type: "mrkdwn",
         text:
           "*What\u2019s new:*\n" +
-          pack.what_is_new.map((item) => `\u2022 ${item}`).join("\n"),
+          pack.what_is_new.map((item) => `\u2022 ${escapeSlackMrkdwn(item)}`).join("\n"),
       },
     });
   }
@@ -57,7 +58,7 @@ export function buildExpandBlocks(pack: TopicPack): KnownBlock[] {
         type: "mrkdwn",
         text:
           "*Uncertainties:*\n" +
-          pack.uncertainties.map((item) => `\u2022 ${item}`).join("\n"),
+          pack.uncertainties.map((item) => `\u2022 ${escapeSlackMrkdwn(item)}`).join("\n"),
       },
     });
   }

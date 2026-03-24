@@ -1,4 +1,5 @@
 import type { KnownBlock } from "@slack/types";
+import { escapeSlackMrkdwn } from "@frontier-digest/core";
 
 export interface ComparisonData {
   previous_framing: string;
@@ -24,14 +25,14 @@ export function buildCompareBlocks(data: ComparisonData): KnownBlock[] {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Previous framing:*\n${data.previous_framing}`,
+        text: `*Previous framing:*\n${escapeSlackMrkdwn(data.previous_framing)}`,
       },
     },
     {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Current framing:*\n${data.current_framing}`,
+        text: `*Current framing:*\n${escapeSlackMrkdwn(data.current_framing)}`,
       },
     },
   ];
@@ -43,7 +44,7 @@ export function buildCompareBlocks(data: ComparisonData): KnownBlock[] {
         type: "mrkdwn",
         text:
           "*Detected shifts:*\n" +
-          data.detected_shifts.map((s) => `\u2022 ${s}`).join("\n"),
+          data.detected_shifts.map((s) => `\u2022 ${escapeSlackMrkdwn(s)}`).join("\n"),
       },
     });
   }
@@ -52,7 +53,7 @@ export function buildCompareBlocks(data: ComparisonData): KnownBlock[] {
     type: "section",
     text: {
       type: "mrkdwn",
-      text: `*Trend interpretation:*\n${data.trend_interpretation}`,
+      text: `*Trend interpretation:*\n${escapeSlackMrkdwn(data.trend_interpretation)}`,
     },
   });
 

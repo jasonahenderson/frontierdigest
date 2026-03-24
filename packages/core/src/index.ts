@@ -10,3 +10,4 @@ export * from "./ingest/index.js";
 export * from "./synthesize/index.js";
 export * from "./pipeline/index.js";
 export * from "./init/index.js";
+export * from "./sanitize/index.js";

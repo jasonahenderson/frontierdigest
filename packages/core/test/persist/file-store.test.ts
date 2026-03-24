@@ -49,7 +49,7 @@ describe("FileStore", () => {
     });
 
     test("getDigest returns null for non-existent date", async () => {
-      const result = await store.getDigest("1999-01-01");
+      const result = await store.getDigest("2099-01-01");
       expect(result).toBeNull();
     });
   });
@@ -66,7 +66,7 @@ describe("FileStore", () => {
     });
 
     test("returns empty array for non-existent digest ID", async () => {
-      const retrieved = await store.getDigestEntries("weekly_1999_01_01");
+      const retrieved = await store.getDigestEntries("weekly_2099_01_01");
       expect(retrieved).toEqual([]);
     });
   });
@@ -119,7 +119,7 @@ describe("FileStore", () => {
     });
 
     test("returns empty array for non-existent date", async () => {
-      const result = await store.getNormalizedItems("1999-01-01");
+      const result = await store.getNormalizedItems("2099-01-01");
       expect(result).toEqual([]);
     });
   });

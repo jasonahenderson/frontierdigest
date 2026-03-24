@@ -1,7 +1,13 @@
+import { z } from "zod";
+import { SourceEvidenceSchema } from "../types/index.js";
 import type { TopicCluster, SourceEvidence, PromptContext, LLMConfig } from "../types/index.js";
 import { loadPrompt } from "./prompt-loader.js";
 import { llmGenerate } from "./llm.js";
 import { consola } from "consola";
+
+const SourceBundleResponseSchema = z.object({
+  sources: z.array(SourceEvidenceSchema),
+});
 
 export async function generateSourceBundle(
   cluster: TopicCluster,
@@ -23,16 +29,26 @@ export async function generateSourceBundle(
   );
 
   const raw = await llmGenerate(system, user, { llmConfig });
-  const parsed = JSON.parse(raw) as { sources: SourceEvidence[] };
 
-  if (!Array.isArray(parsed.sources)) {
-    throw new Error(
-      `Source bundle response invalid for entry: ${entryTitle}`,
-    );
+  // Strip markdown fences if present
+  const cleaned = raw.replace(/^```(?:json)?\s*\n?/m, "").replace(/\n?```\s*$/m, "").trim();
+
+  let jsonParsed: unknown;
+  try {
+    jsonParsed = JSON.parse(cleaned);
+  } catch {
+    consola.error(`LLM returned non-JSON for source bundle: ${entryTitle}`);
+    throw new Error(`Failed to parse LLM response as JSON for source bundle: ${entryTitle}`);
+  }
+
+  const result = SourceBundleResponseSchema.safeParse(jsonParsed);
+  if (!result.success) {
+    consola.error(`LLM output validation failed: ${result.error.message}`);
+    throw new Error(`Invalid LLM output for source bundle: ${entryTitle}`);
   }
 
   consola.success(
-    `Source bundle generated: ${parsed.sources.length} sources for "${entryTitle}"`,
+    `Source bundle generated: ${result.data.sources.length} sources for "${entryTitle}"`,
   );
-  return parsed.sources;
+  return result.data.sources;
 }

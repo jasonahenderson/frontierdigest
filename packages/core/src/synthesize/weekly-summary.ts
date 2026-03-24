@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { DigestEntry, PromptContext, LLMConfig } from "../types/index.js";
 import { loadPrompt } from "./prompt-loader.js";
 import { llmGenerate } from "./llm.js";
@@ -12,12 +13,14 @@ export interface WeeklySummaryInput {
   topItemCount: number;
 }
 
-export interface WeeklySummaryOutput {
-  summary: string;
-  new_theme_count: number;
-  accelerating_count: number;
-  cooling_count: number;
-}
+const WeeklySummaryOutputSchema = z.object({
+  summary: z.string(),
+  new_theme_count: z.number(),
+  accelerating_count: z.number(),
+  cooling_count: z.number(),
+});
+
+export type WeeklySummaryOutput = z.infer<typeof WeeklySummaryOutputSchema>;
 
 export async function generateWeeklySummary(
   input: WeeklySummaryInput,
@@ -51,18 +54,24 @@ export async function generateWeeklySummary(
   );
 
   const raw = await llmGenerate(system, user, { llmConfig });
-  const parsed = JSON.parse(raw) as WeeklySummaryOutput;
 
-  // Validate required fields
-  if (
-    typeof parsed.summary !== "string" ||
-    typeof parsed.new_theme_count !== "number" ||
-    typeof parsed.accelerating_count !== "number" ||
-    typeof parsed.cooling_count !== "number"
-  ) {
-    throw new Error("Weekly summary response missing required fields");
+  // Strip markdown fences if present
+  const cleaned = raw.replace(/^```(?:json)?\s*\n?/m, "").replace(/\n?```\s*$/m, "").trim();
+
+  let jsonParsed: unknown;
+  try {
+    jsonParsed = JSON.parse(cleaned);
+  } catch {
+    consola.error("LLM returned non-JSON for weekly summary");
+    throw new Error("Failed to parse LLM response as JSON for weekly summary");
+  }
+
+  const result = WeeklySummaryOutputSchema.safeParse(jsonParsed);
+  if (!result.success) {
+    consola.error(`LLM output validation failed: ${result.error.message}`);
+    throw new Error("Invalid LLM output for weekly summary");
   }
 
   consola.success("Weekly summary generated");
-  return parsed;
+  return result.data;
 }

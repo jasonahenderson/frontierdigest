@@ -3,6 +3,7 @@ import type { NormalizedItem } from "../types/index.js";
 import { canonicalizeUrl } from "./url-canonical.js";
 import { contentHash } from "./content-hash.js";
 import { extractExcerpt } from "./excerpt.js";
+import { escapeTemplateVars, sanitizeText } from "../sanitize/index.js";
 
 export { canonicalizeUrl } from "./url-canonical.js";
 export { contentHash } from "./content-hash.js";
@@ -55,20 +56,24 @@ export async function normalize(items: RawItem[]): Promise<NormalizedItem[]> {
       const hash = await contentHash(item.text);
       const excerpt = extractExcerpt(item.text);
 
+      const sanitizedTitle = escapeTemplateVars(sanitizeText(item.title));
+      const sanitizedText = escapeTemplateVars(sanitizeText(item.text));
+      const sanitizedExcerpt = escapeTemplateVars(sanitizeText(excerpt));
+
       const normalized = NormalizedItemSchema.parse({
         id,
         source_id: item.source_id,
         source_name: item.source_name,
         source_type: item.source_type,
-        title: item.title,
+        title: sanitizedTitle,
         url: item.url,
         canonical_url,
         published_at: item.published_at,
         fetched_at: item.fetched_at,
         author: item.author,
         tags: item.tags,
-        text: item.text,
-        excerpt,
+        text: sanitizedText,
+        excerpt: sanitizedExcerpt,
         content_hash: hash,
         language: item.language ?? "en",
       });

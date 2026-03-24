@@ -23,6 +23,16 @@ export default defineCommand({
     },
   },
   async run({ args }) {
+    const { validateConfigPath } = await import("@frontier-digest/core");
+
+    // Validate paths before use
+    if (args.domain) {
+      args.domain = validateConfigPath(args.domain);
+    } else {
+      args.profile = validateConfigPath(args.profile);
+      args.sources = validateConfigPath(args.sources);
+    }
+
     if (args.domain) {
       const { validateDomainConfig } = await import("@frontier-digest/core");
 

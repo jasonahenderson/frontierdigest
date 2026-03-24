@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { PromptContext } from "../types/index.js";
+import { wrapUntrustedContent } from "../sanitize/index.js";
 
 /** Default context preserving original AI-frontier behaviour. */
 const DEFAULT_CONTEXT: PromptContext = {
@@ -31,20 +32,29 @@ export async function loadPrompt(
   let system = systemMatch[1].trim();
   let user = userMatch[1].trim();
 
-  // Merge persona/focus context with caller-supplied variables.
-  // Caller variables take precedence if they also specify persona/focus.
+  const TRUSTED_VARS = new Set(["persona", "focus"]);
+
   const ctx = context ?? DEFAULT_CONTEXT;
-  const merged: Record<string, string> = {
+  const trustedVars: Record<string, string> = {
     persona: ctx.persona,
     focus: ctx.focus,
-    ...variables,
   };
 
-  // Replace all {{variable}} placeholders
-  for (const [key, value] of Object.entries(merged)) {
+  // System section: ONLY substitute trusted vars (persona, focus)
+  for (const [key, value] of Object.entries(trustedVars)) {
     const pattern = new RegExp(`\\{\\{${key}\\}\\}`, "g");
     system = system.replace(pattern, value);
-    user = user.replace(pattern, value);
+  }
+
+  // User section: substitute trusted vars normally, untrusted vars with boundary wrapping
+  const allVars = { ...trustedVars, ...variables };
+  for (const [key, value] of Object.entries(allVars)) {
+    const pattern = new RegExp(`\\{\\{${key}\\}\\}`, "g");
+    if (TRUSTED_VARS.has(key)) {
+      user = user.replace(pattern, value);
+    } else {
+      user = user.replace(pattern, wrapUntrustedContent(key, value));
+    }
   }
 
   return { system, user };

@@ -1,15 +1,18 @@
+import { z } from "zod";
 import type { DigestEntry, TopicCluster, PromptContext, LLMConfig } from "../types/index.js";
 import { loadPrompt } from "./prompt-loader.js";
 import { llmGenerate } from "./llm.js";
 import { consola } from "consola";
 
-export interface TopicExpandOutput {
-  expanded_summary: string;
-  why_included: string[];
-  what_is_new: string[];
-  uncertainties: string[];
-  related_topics: string[];
-}
+const TopicExpandOutputSchema = z.object({
+  expanded_summary: z.string(),
+  why_included: z.array(z.string()),
+  what_is_new: z.array(z.string()),
+  uncertainties: z.array(z.string()),
+  related_topics: z.array(z.string()),
+});
+
+export type TopicExpandOutput = z.infer<typeof TopicExpandOutputSchema>;
 
 export async function generateTopicExpansion(
   entry: DigestEntry,
@@ -33,21 +36,24 @@ export async function generateTopicExpansion(
   );
 
   const raw = await llmGenerate(system, user, { llmConfig });
-  const parsed = JSON.parse(raw) as TopicExpandOutput;
 
-  // Validate required fields
-  if (
-    typeof parsed.expanded_summary !== "string" ||
-    !Array.isArray(parsed.why_included) ||
-    !Array.isArray(parsed.what_is_new) ||
-    !Array.isArray(parsed.uncertainties) ||
-    !Array.isArray(parsed.related_topics)
-  ) {
-    throw new Error(
-      `Topic expansion response invalid for entry: ${entry.title}`,
-    );
+  // Strip markdown fences if present
+  const cleaned = raw.replace(/^```(?:json)?\s*\n?/m, "").replace(/\n?```\s*$/m, "").trim();
+
+  let jsonParsed: unknown;
+  try {
+    jsonParsed = JSON.parse(cleaned);
+  } catch {
+    consola.error(`LLM returned non-JSON for topic expansion: ${entry.title}`);
+    throw new Error(`Failed to parse LLM response as JSON for topic expansion: ${entry.title}`);
+  }
+
+  const result = TopicExpandOutputSchema.safeParse(jsonParsed);
+  if (!result.success) {
+    consola.error(`LLM output validation failed: ${result.error.message}`);
+    throw new Error(`Invalid LLM output for topic expansion: ${entry.title}`);
   }
 
   consola.success(`Topic expansion generated for: ${entry.title}`);
-  return parsed;
+  return result.data;
 }

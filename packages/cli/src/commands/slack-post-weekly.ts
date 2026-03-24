@@ -27,8 +27,15 @@ export default defineCommand({
   },
   async run({ args }) {
     try {
-      const { createStore } = await import("@frontier-digest/core");
+      const { createStore, validateConfigPath } = await import("@frontier-digest/core");
       const { postWeeklyDigest } = await import("@frontier-digest/slack");
+
+      // Validate paths before use
+      if (args.domain) {
+        args.domain = validateConfigPath(args.domain);
+      } else {
+        args.profile = validateConfigPath(args.profile);
+      }
 
       consola.info("Posting weekly digest to Slack...");
 

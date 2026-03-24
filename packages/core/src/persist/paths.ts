@@ -1,6 +1,8 @@
 import { join } from "node:path";
+import { validateDate } from "../sanitize/index.js";
 
 function dateParts(date: string): [string, string, string] {
+  validateDate(date);
   const [yyyy, mm, dd] = date.split("-");
   return [yyyy, mm, dd];
 }

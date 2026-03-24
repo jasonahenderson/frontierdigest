@@ -8,6 +8,17 @@ import {
 } from "./blocks/compare-reply.js";
 
 /**
+ * Validate that an action ID contains only safe characters.
+ * Action IDs should be alphanumeric with hyphens and underscores.
+ */
+function validateActionId(raw: string): string {
+  if (!/^[a-zA-Z0-9_-]+$/.test(raw)) {
+    throw new Error(`Invalid action ID: ${raw}`);
+  }
+  return raw;
+}
+
+/**
  * Register Bolt action handlers for the three drill-down buttons:
  * expand, sources, and compare.
  */
@@ -18,7 +29,7 @@ export function registerInteractions(app: App, store: Store): void {
 
     if (!("action_id" in action)) return;
 
-    const entryId = action.action_id.replace(/^expand:/, "");
+    const entryId = validateActionId(action.action_id.replace(/^expand:/, ""));
 
     try {
       const pack = await store.getTopicPack(entryId);
@@ -44,7 +55,7 @@ export function registerInteractions(app: App, store: Store): void {
 
     if (!("action_id" in action)) return;
 
-    const entryId = action.action_id.replace(/^sources:/, "");
+    const entryId = validateActionId(action.action_id.replace(/^sources:/, ""));
 
     try {
       const pack = await store.getTopicPack(entryId);
@@ -72,7 +83,7 @@ export function registerInteractions(app: App, store: Store): void {
 
     if (!("action_id" in action)) return;
 
-    const entryId = action.action_id.replace(/^compare:/, "");
+    const entryId = validateActionId(action.action_id.replace(/^compare:/, ""));
 
     try {
       const history = await store.getTopicHistory(entryId);

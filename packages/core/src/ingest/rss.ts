@@ -2,15 +2,9 @@ import Parser from "rss-parser";
 import { consola } from "consola";
 import type { RawItem } from "../normalize/index.js";
 import type { SourceConfig } from "../types/index.js";
+import { stripHtml, sanitizeText } from "../sanitize/index.js";
 
 const parser = new Parser();
-
-/**
- * Strip HTML tags from a string.
- */
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "").trim();
-}
 
 /**
  * Fetch an RSS feed and return items within the given time window.
@@ -46,13 +40,13 @@ export async function fetchRss(
         source_id: source.id,
         source_name: source.name,
         source_type: source.type,
-        title: item.title ?? "",
+        title: sanitizeText(item.title ?? ""),
         url: item.link ?? "",
         published_at: publishedDate.toISOString(),
         fetched_at: fetchedAt,
-        author: item.creator ?? item.author,
+        author: sanitizeText(item.creator ?? item.author ?? ""),
         tags: source.tags ?? [],
-        text: stripHtml(rawText),
+        text: sanitizeText(stripHtml(rawText)),
         language: "en",
       });
     }

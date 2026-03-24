@@ -34,7 +34,16 @@ export default defineCommand({
         score,
         cluster,
         synthesize,
+        validateConfigPath,
       } = await import("@frontier-digest/core");
+
+      // Validate paths before use
+      if (args.domain) {
+        args.domain = validateConfigPath(args.domain);
+      } else {
+        args.profile = validateConfigPath(args.profile);
+        args.sources = validateConfigPath(args.sources);
+      }
 
       consola.info("Generating weekly digest from ingested data...");
 

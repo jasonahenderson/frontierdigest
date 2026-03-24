@@ -1,15 +1,18 @@
+import { z } from "zod";
 import type { TopicCluster, PromptContext, LLMConfig } from "../types/index.js";
 import { loadPrompt } from "./prompt-loader.js";
 import { llmGenerate } from "./llm.js";
 import { consola } from "consola";
 
-export interface DigestEntryOutput {
-  title: string;
-  summary: string;
-  why_it_matters: string;
-  novelty_label: "high" | "medium" | "low";
-  confidence_label: "high" | "medium" | "low";
-}
+const DigestEntryOutputSchema = z.object({
+  title: z.string(),
+  summary: z.string(),
+  why_it_matters: z.string(),
+  novelty_label: z.enum(["high", "medium", "low"]),
+  confidence_label: z.enum(["high", "medium", "low"]),
+});
+
+export type DigestEntryOutput = z.infer<typeof DigestEntryOutputSchema>;
 
 export async function generateDigestEntry(
   cluster: TopicCluster,
@@ -33,21 +36,24 @@ export async function generateDigestEntry(
   );
 
   const raw = await llmGenerate(system, user, { llmConfig });
-  const parsed = JSON.parse(raw) as DigestEntryOutput;
 
-  // Validate required fields
-  if (
-    typeof parsed.title !== "string" ||
-    typeof parsed.summary !== "string" ||
-    typeof parsed.why_it_matters !== "string" ||
-    !["high", "medium", "low"].includes(parsed.novelty_label) ||
-    !["high", "medium", "low"].includes(parsed.confidence_label)
-  ) {
-    throw new Error(
-      `Digest entry response invalid for cluster: ${cluster.label}`,
-    );
+  // Strip markdown fences if present
+  const cleaned = raw.replace(/^```(?:json)?\s*\n?/m, "").replace(/\n?```\s*$/m, "").trim();
+
+  let jsonParsed: unknown;
+  try {
+    jsonParsed = JSON.parse(cleaned);
+  } catch {
+    consola.error(`LLM returned non-JSON for cluster: ${cluster.label}`);
+    throw new Error(`Failed to parse LLM response as JSON for cluster: ${cluster.label}`);
   }
 
-  consola.success(`Digest entry generated: ${parsed.title}`);
-  return parsed;
+  const result = DigestEntryOutputSchema.safeParse(jsonParsed);
+  if (!result.success) {
+    consola.error(`LLM output validation failed: ${result.error.message}`);
+    throw new Error(`Invalid LLM output for cluster: ${cluster.label}`);
+  }
+
+  consola.success(`Digest entry generated: ${result.data.title}`);
+  return result.data;
 }

@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile, readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
+import { sanitizePathComponent } from "../sanitize/index.js";
 import type {
   NormalizedItem,
   DigestEntry,
@@ -55,9 +56,10 @@ export class FileStore implements Store {
     sourceId: string,
     items: unknown[],
   ): Promise<void> {
+    const safeSourceId = sanitizePathComponent(sourceId);
     const dir = rawDir(this.rootDir, date);
     await ensureDir(dir);
-    await writeJson(join(dir, `${sourceId}.json`), items);
+    await writeJson(join(dir, `${safeSourceId}.json`), items);
   }
 
   async saveNormalizedItems(

@@ -1,5 +1,6 @@
 import type { KnownBlock } from "@slack/types";
 import type { WeeklyDigest, DigestEntry } from "@frontier-digest/core";
+import { escapeSlackMrkdwn } from "@frontier-digest/core";
 import { formatDate, pluralize, truncate } from "../formatter.js";
 
 /**
@@ -55,8 +56,8 @@ export function buildDigestBlocks(
       text: {
         type: "mrkdwn",
         text: [
-          `*${rank}. ${entry.title}*`,
-          truncate(entry.summary, 300),
+          `*${rank}. ${escapeSlackMrkdwn(entry.title)}*`,
+          escapeSlackMrkdwn(truncate(entry.summary, 300)),
           `Sources: ${entry.source_count} | Primary: ${entry.primary_source_count} | Novelty: ${noveltyLabel} | Confidence: ${confidenceLabel}`,
         ].join("\n"),
       },

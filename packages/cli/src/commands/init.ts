@@ -22,6 +22,11 @@ export default defineCommand({
     },
   },
   async run({ args }) {
+    if (args.output) {
+      const { validateOutputPath } = await import("@frontier-digest/core");
+      args.output = validateOutputPath(args.output, "configs");
+    }
+
     if (args.template) {
       const { getTemplatePath, listTemplates } = await import(
         "@frontier-digest/core"

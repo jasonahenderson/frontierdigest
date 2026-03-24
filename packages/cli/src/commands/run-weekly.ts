@@ -24,7 +24,15 @@ export default defineCommand({
   },
   async run({ args }) {
     try {
-      const { createStore, runWeeklyPipeline } = await import("@frontier-digest/core");
+      const { createStore, runWeeklyPipeline, validateConfigPath } = await import("@frontier-digest/core");
+
+      // Validate paths before use
+      if (args.domain) {
+        args.domain = validateConfigPath(args.domain);
+      } else {
+        args.profile = validateConfigPath(args.profile);
+        args.sources = validateConfigPath(args.sources);
+      }
 
       consola.info("Running weekly digest pipeline...");
 
