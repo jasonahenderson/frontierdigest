@@ -38,6 +38,10 @@ domain:
       weight: 1.0
       tags: [research, neuroscience]
 
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+
   slack:
     enabled: true
     channel: "#neuro-radar"

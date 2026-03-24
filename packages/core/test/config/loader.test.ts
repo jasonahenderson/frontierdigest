@@ -1,12 +1,19 @@
 import { describe, test, expect } from "bun:test";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { writeFile, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { loadProfile, loadSources, validateConfig } from "../../src/config/index.js";
+import {
+  loadProfile,
+  loadSources,
+  loadDomain,
+  domainToProfileAndSources,
+  validateConfig,
+} from "../../src/config/index.js";
 
 const FIXTURES_DIR = join(import.meta.dir, "..", "fixtures");
 const PROFILE_PATH = join(FIXTURES_DIR, "profile.yaml");
 const SOURCES_PATH = join(FIXTURES_DIR, "sources.yaml");
+const DOMAINS_DIR = resolve(import.meta.dir, "..", "..", "..", "..", "configs", "domains");
 
 describe("Config loader", () => {
   describe("loadProfile", () => {
@@ -158,6 +165,124 @@ describe("Config loader", () => {
       } finally {
         await rm(tmpDir, { recursive: true, force: true });
       }
+    });
+  });
+
+  describe("domain config with LLM", () => {
+    test("loads domain with llm section", async () => {
+      const domain = await loadDomain(join(DOMAINS_DIR, "ai-frontier.yaml"));
+      expect(domain.domain.id).toBe("ai-frontier");
+      expect(domain.domain.llm).toBeDefined();
+      expect(domain.domain.llm?.provider).toBe("anthropic");
+    });
+
+    test("domainToProfileAndSources works without llm section", async () => {
+      const domain = await loadDomain(join(DOMAINS_DIR, "ai-frontier.yaml"));
+      const resolved = domainToProfileAndSources(domain);
+      expect(resolved.profile).toBeDefined();
+      expect(resolved.sources.length).toBeGreaterThan(0);
+      expect(resolved.promptContext).toBeDefined();
+    });
+
+    test("loads domain with llm config from temp file", async () => {
+      const tmpDir = await mkdtemp(join(tmpdir(), "fd-test-"));
+      const domainPath = join(tmpDir, "test-domain.yaml");
+      await writeFile(
+        domainPath,
+        [
+          "domain:",
+          "  id: test-llm",
+          '  name: "Test LLM Domain"',
+          "  prompt_context:",
+          '    persona: "Test persona"',
+          '    focus: "Test focus"',
+          "  profile:",
+          "    window:",
+          "      weekly_lookback_days: 7",
+          "    interests:",
+          "      include:",
+          "        - testing",
+          "      exclude: []",
+          "    ranking:",
+          "      max_digest_items: 3",
+          "  sources:",
+          "    - id: test-src",
+          "      type: rss",
+          '      name: "Test Source"',
+          "      url: https://example.com/feed.xml",
+          "      weight: 1.0",
+          "      tags: [test]",
+          "  llm:",
+          "    provider: openai",
+          "    model: gpt-4o-mini",
+          "    temperature: 0.5",
+          "  slack:",
+          "    enabled: false",
+          "    channel: '#test'",
+          "    post_threads: false",
+        ].join("\n"),
+        "utf-8",
+      );
+      try {
+        const domain = await loadDomain(domainPath);
+        expect(domain.domain.llm).toBeDefined();
+        expect(domain.domain.llm?.provider).toBe("openai");
+        expect(domain.domain.llm?.model).toBe("gpt-4o-mini");
+        expect(domain.domain.llm?.temperature).toBe(0.5);
+      } finally {
+        await rm(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    test("domain with llm defaults provider to anthropic", async () => {
+      const tmpDir = await mkdtemp(join(tmpdir(), "fd-test-"));
+      const domainPath = join(tmpDir, "test-domain.yaml");
+      await writeFile(
+        domainPath,
+        [
+          "domain:",
+          "  id: test-llm-default",
+          '  name: "Test LLM Default"',
+          "  prompt_context:",
+          '    persona: "Test persona"',
+          '    focus: "Test focus"',
+          "  profile:",
+          "    window:",
+          "      weekly_lookback_days: 7",
+          "    interests:",
+          "      include:",
+          "        - testing",
+          "      exclude: []",
+          "    ranking:",
+          "      max_digest_items: 3",
+          "  sources:",
+          "    - id: test-src",
+          "      type: rss",
+          '      name: "Test Source"',
+          "      url: https://example.com/feed.xml",
+          "      weight: 1.0",
+          "      tags: [test]",
+          "  llm: {}",
+          "  slack:",
+          "    enabled: false",
+          "    channel: '#test'",
+          "    post_threads: false",
+        ].join("\n"),
+        "utf-8",
+      );
+      try {
+        const domain = await loadDomain(domainPath);
+        expect(domain.domain.llm).toBeDefined();
+        expect(domain.domain.llm?.provider).toBe("anthropic");
+      } finally {
+        await rm(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    test("domain without llm section still works with loadProfile", async () => {
+      const profile = await loadProfile(PROFILE_PATH);
+      expect(profile).toBeDefined();
+      expect(profile.profile).toBe("test-profile");
     });
   });
 });

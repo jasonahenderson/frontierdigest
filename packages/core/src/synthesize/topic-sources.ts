@@ -1,4 +1,4 @@
-import type { TopicCluster, SourceEvidence, PromptContext } from "../types/index.js";
+import type { TopicCluster, SourceEvidence, PromptContext, LLMConfig } from "../types/index.js";
 import { loadPrompt } from "./prompt-loader.js";
 import { llmGenerate } from "./llm.js";
 import { consola } from "consola";
@@ -8,6 +8,7 @@ export async function generateSourceBundle(
   entryTitle: string,
   promptsDir: string,
   promptContext?: PromptContext,
+  llmConfig?: LLMConfig,
 ): Promise<SourceEvidence[]> {
   consola.info(`Generating source bundle for: ${entryTitle}`);
 
@@ -21,7 +22,7 @@ export async function generateSourceBundle(
     promptContext,
   );
 
-  const raw = await llmGenerate(system, user);
+  const raw = await llmGenerate(system, user, { llmConfig });
   const parsed = JSON.parse(raw) as { sources: SourceEvidence[] };
 
   if (!Array.isArray(parsed.sources)) {

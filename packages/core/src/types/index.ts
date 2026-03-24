@@ -56,3 +56,12 @@ export {
   DomainConfigSchema,
   type DomainConfig,
 } from "./domain-config.js";
+
+export {
+  LLMConfigSchema,
+  type LLMConfig,
+  LLMProviderEnum,
+  type LLMProviderType,
+  DEFAULT_MODELS,
+  DEFAULT_API_KEY_ENVS,
+} from "./llm-config.js";

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SourceConfigSchema } from "./source-config.js";
+import { LLMConfigSchema } from "./llm-config.js";
 
 export const PromptContextSchema = z.object({
   persona: z
@@ -58,6 +59,8 @@ export const DomainConfigSchema = z.object({
     }),
 
     sources: z.array(SourceConfigSchema),
+
+    llm: LLMConfigSchema.optional(),
 
     slack: z.object({
       enabled: z.boolean().default(true),

@@ -77,6 +77,10 @@ domain:
       weight: 0.6
       tags: [research, models, reasoning]
 
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+
   slack:
     enabled: true
     channel: "#ai-radar"

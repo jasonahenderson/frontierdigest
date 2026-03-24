@@ -8,6 +8,7 @@ import type {
   TopicCluster,
   DedupeResult,
   PromptContext,
+  LLMConfig,
 } from "../types/index.js";
 import type { Store } from "../persist/index.js";
 import type { RawItem } from "../normalize/index.js";
@@ -28,6 +29,7 @@ export async function runWeeklyPipeline(
   sources: SourceConfig[],
   store: Store,
   promptContext?: PromptContext,
+  llmConfig?: LLMConfig,
 ): Promise<RunManifest> {
   const today = new Date().toISOString().slice(0, 10);
   const runId = generateRunId(today);
@@ -174,6 +176,7 @@ export async function runWeeklyPipeline(
         dedupeResult?.total_canonical ?? normalizedItems.length,
         undefined, // promptsDir - use default
         promptContext,
+        llmConfig,
       );
       tracker.completeStep(stepSynthesize, synthesisResult.entries.length);
       consola.success(

@@ -408,6 +408,25 @@ domain:
 | Asia Travel | #travel-asia | travel blogs, airline feeds, tourism boards |
 | Brain & Behavior | #neuro-radar | arXiv q-bio.NC, Nature Neuroscience, PubMed |
 
+### 7.4 LLM provider config (v0.1.1)
+
+The LLM provider is configurable per domain via the `llm` section. Uses [Vercel AI SDK](https://sdk.vercel.ai/) for a unified interface across providers.
+
+```yaml
+domain:
+  llm:
+    provider: anthropic          # anthropic | openai | ollama | google | openai-compatible
+    model: claude-sonnet-4-20250514
+    # api_key_env: ANTHROPIC_API_KEY
+    # base_url: http://localhost:11434/v1
+    # temperature: 0.3
+    # max_tokens: 4096
+```
+
+Supported providers: Anthropic (Claude), OpenAI (GPT-4o), Ollama (local/free), Google (Gemini), and any OpenAI-compatible endpoint.
+
+Defaults to Anthropic if no `llm` section is provided. See [docs/llm-providers.md](llm-providers.md) for the full provider matrix, configuration details, and migration guide.
+
 ---
 
 ## 8. Data contracts

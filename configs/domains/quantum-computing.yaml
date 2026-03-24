@@ -44,6 +44,10 @@ domain:
       weight: 0.8
       tags: [research, quantum-computing]
 
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+
   slack:
     enabled: true
     channel: "#quantum-radar"

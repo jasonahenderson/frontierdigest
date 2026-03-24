@@ -9,6 +9,7 @@ import {
   DomainConfigSchema,
   type DomainConfig,
   type PromptContext,
+  type LLMConfig,
 } from "../types/index.js";
 
 export async function loadProfile(path: string): Promise<ProfileConfig> {
@@ -34,6 +35,7 @@ export function domainToProfileAndSources(domain: DomainConfig): {
   profile: ProfileConfig;
   sources: SourceConfig[];
   promptContext: PromptContext;
+  llmConfig?: LLMConfig;
 } {
   const d = domain.domain;
   return {
@@ -51,5 +53,6 @@ export function domainToProfileAndSources(domain: DomainConfig): {
     },
     sources: d.sources,
     promptContext: d.prompt_context,
+    llmConfig: d.llm,
   };
 }

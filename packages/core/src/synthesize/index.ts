@@ -9,6 +9,7 @@ import type {
   SourceBundle,
   ProfileConfig,
   PromptContext,
+  LLMConfig,
 } from "../types/index.js";
 import type { Store } from "../persist/index.js";
 import { generateDigestEntry } from "./digest-entry.js";
@@ -33,6 +34,7 @@ export async function synthesize(
   canonicalItemCount: number,
   promptsDir?: string,
   promptContext?: PromptContext,
+  llmConfig?: LLMConfig,
 ): Promise<SynthesisResult> {
   const resolvedPromptsDir =
     promptsDir ?? resolve(import.meta.dirname, "../../../../prompts");
@@ -47,7 +49,7 @@ export async function synthesize(
   consola.info("Step 1: Generating digest entries...");
   const entryOutputs = await Promise.all(
     clusters.map((cluster) =>
-      generateDigestEntry(cluster, interestList, profileName, resolvedPromptsDir, promptContext),
+      generateDigestEntry(cluster, interestList, profileName, resolvedPromptsDir, promptContext, llmConfig),
     ),
   );
 
@@ -78,6 +80,7 @@ export async function synthesize(
         interestList,
         resolvedPromptsDir,
         promptContext,
+        llmConfig,
       ),
     ),
   );
@@ -86,7 +89,7 @@ export async function synthesize(
   consola.info("Step 3: Generating source bundles...");
   const sourceBundleSources = await Promise.all(
     clusters.map((cluster, i) =>
-      generateSourceBundle(cluster, entries[i].title, resolvedPromptsDir, promptContext),
+      generateSourceBundle(cluster, entries[i].title, resolvedPromptsDir, promptContext, llmConfig),
     ),
   );
 
@@ -124,6 +127,7 @@ export async function synthesize(
         previousTopic,
         resolvedPromptsDir,
         promptContext,
+        llmConfig,
       );
     }),
   );
@@ -154,6 +158,7 @@ export async function synthesize(
     },
     resolvedPromptsDir,
     promptContext,
+    llmConfig,
   );
 
   // --- Step 6: Assemble WeeklyDigest ---
@@ -179,7 +184,7 @@ export async function synthesize(
 }
 
 // Re-export all functions and types
-export { getClient, llmGenerate } from "./llm.js";
+export { llmGenerate, createModel, resolveConfig } from "./llm.js";
 export { loadPrompt } from "./prompt-loader.js";
 export {
   generateWeeklySummary,

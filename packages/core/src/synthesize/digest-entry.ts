@@ -1,4 +1,4 @@
-import type { TopicCluster, PromptContext } from "../types/index.js";
+import type { TopicCluster, PromptContext, LLMConfig } from "../types/index.js";
 import { loadPrompt } from "./prompt-loader.js";
 import { llmGenerate } from "./llm.js";
 import { consola } from "consola";
@@ -17,6 +17,7 @@ export async function generateDigestEntry(
   profileName: string,
   promptsDir: string,
   promptContext?: PromptContext,
+  llmConfig?: LLMConfig,
 ): Promise<DigestEntryOutput> {
   consola.info(`Generating digest entry for cluster: ${cluster.label}`);
 
@@ -31,7 +32,7 @@ export async function generateDigestEntry(
     promptContext,
   );
 
-  const raw = await llmGenerate(system, user);
+  const raw = await llmGenerate(system, user, { llmConfig });
   const parsed = JSON.parse(raw) as DigestEntryOutput;
 
   // Validate required fields

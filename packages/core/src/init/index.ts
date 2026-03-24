@@ -1,5 +1,5 @@
 import consola from "consola";
-import { DomainConfigSchema, type DomainConfig } from "../types/index.js";
+import { DomainConfigSchema, type DomainConfig, type LLMConfig } from "../types/index.js";
 import { llmGenerate } from "../synthesize/llm.js";
 
 export { listTemplates, getTemplatePath } from "./templates.js";
@@ -77,6 +77,7 @@ Return ONLY valid JSON, no markdown fences.`;
 
 export async function generateDomainConfig(
   input: InitInput,
+  llmConfig?: LLMConfig,
 ): Promise<InitResult> {
   const slackNote = input.slackEnabled
     ? `The user wants Slack notifications in channel "${input.slackChannel ?? "#digest"}". Set slack.enabled to true and slack.channel to "${input.slackChannel ?? "#digest"}".`
@@ -89,6 +90,7 @@ export async function generateDomainConfig(
   const raw = await llmGenerate(SYSTEM_PROMPT, userPrompt, {
     maxTokens: 4096,
     temperature: 0.4,
+    llmConfig,
   });
 
   // Strip markdown fences if the LLM included them despite instructions

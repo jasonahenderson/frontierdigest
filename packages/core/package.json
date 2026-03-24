@@ -4,10 +4,14 @@
   "type": "module",
   "main": "src/index.ts",
   "dependencies": {
-    "zod": "^3.24.0",
-    "yaml": "^2.7.0",
-    "rss-parser": "^3.13.0",
+    "@ai-sdk/anthropic": "^3.0.64",
+    "@ai-sdk/google": "^3.0.53",
+    "@ai-sdk/openai": "^3.0.48",
+    "ai": "^6.0.138",
     "consola": "^3.4.0",
-    "@anthropic-ai/sdk": "^0.39.0"
+    "ollama-ai-provider": "^1.2.0",
+    "rss-parser": "^3.13.0",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.0"
   }
 }
