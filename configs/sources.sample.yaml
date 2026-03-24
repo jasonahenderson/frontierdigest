@@ -1,0 +1,70 @@
+sources:
+  - id: anthropic-news
+    type: rss
+    name: Anthropic News
+    url: https://www.anthropic.com/rss.xml
+    weight: 1.0
+    tags: [agents, reasoning, safety]
+
+  - id: openai-blog
+    type: rss
+    name: OpenAI Blog
+    url: https://openai.com/blog/rss.xml
+    weight: 1.0
+    tags: [models, agents, reasoning]
+
+  - id: deepmind-blog
+    type: rss
+    name: Google DeepMind Blog
+    url: https://deepmind.google/blog/rss.xml
+    weight: 1.0
+    tags: [models, reasoning, science]
+
+  - id: huggingface-blog
+    type: rss
+    name: Hugging Face Blog
+    url: https://huggingface.co/blog/feed.xml
+    weight: 0.9
+    tags: [open-source, models, tooling]
+
+  - id: latent-space
+    type: rss
+    name: Latent Space Podcast
+    url: https://www.latent.space/feed
+    weight: 0.8
+    tags: [analysis, tooling, agents]
+
+  - id: simon-willison
+    type: rss
+    name: Simon Willison's Weblog
+    url: https://simonwillison.net/atom/everything/
+    weight: 0.8
+    tags: [tooling, agents, analysis]
+
+  - id: ai-news-substack
+    type: rss
+    name: The Batch (deeplearning.ai)
+    url: https://www.deeplearning.ai/the-batch/feed/
+    weight: 0.7
+    tags: [news, models, applications]
+
+  - id: arxiv-cs-ai
+    type: rss
+    name: arXiv CS.AI
+    url: http://export.arxiv.org/rss/cs.AI
+    weight: 0.6
+    tags: [research, models, reasoning]
+
+  - id: arxiv-cs-cl
+    type: rss
+    name: arXiv CS.CL
+    url: http://export.arxiv.org/rss/cs.CL
+    weight: 0.6
+    tags: [research, language-models]
+
+  - id: meta-ai-blog
+    type: rss
+    name: Meta AI Blog
+    url: https://ai.meta.com/blog/rss/
+    weight: 0.9
+    tags: [open-source, models, research]

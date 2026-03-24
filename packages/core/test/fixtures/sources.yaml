@@ -1,0 +1,19 @@
+sources:
+  - id: test-source-1
+    type: rss
+    name: Test Source One
+    url: https://example.com/feed1.xml
+    weight: 1.0
+    tags: [agents, memory]
+  - id: test-source-2
+    type: rss
+    name: Test Source Two
+    url: https://example.com/feed2.xml
+    weight: 0.8
+    tags: [context-engineering, agents]
+  - id: test-source-3
+    type: rss
+    name: Test Source Three
+    url: https://example.com/feed3.xml
+    weight: 0.6
+    tags: [models, evaluation]

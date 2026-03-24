@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "paths": {
+      "@frontier-digest/core": ["./packages/core/src"],
+      "@frontier-digest/core/*": ["./packages/core/src/*"],
+      "@frontier-digest/cli": ["./packages/cli/src"],
+      "@frontier-digest/cli/*": ["./packages/cli/src/*"],
+      "@frontier-digest/slack": ["./packages/slack/src"],
+      "@frontier-digest/slack/*": ["./packages/slack/src/*"]
+    }
+  },
+  "include": ["packages/*/src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "data"]
+}

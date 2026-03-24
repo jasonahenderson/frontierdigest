@@ -1,0 +1,15 @@
+{
+  "id": "weekly-digest-2026-03-23",
+  "generated_at": "2026-03-23T07:00:00Z",
+  "window_start": "2026-03-16T07:00:00Z",
+  "window_end": "2026-03-23T07:00:00Z",
+  "raw_item_count": 10,
+  "canonical_item_count": 9,
+  "top_item_count": 3,
+  "summary": "This week's AI frontier highlights center on three themes: hierarchical memory architectures are enabling agents to maintain context over thousands of steps, context engineering is maturing into a production discipline with converging best practices, and tool-using agents are posting record benchmark scores on SWE-bench while multi-agent coordination improves rapidly.",
+  "entries": ["digest-entry-001", "digest-entry-002", "digest-entry-003"],
+  "new_theme_count": 1,
+  "accelerating_count": 2,
+  "cooling_count": 0,
+  "run_ref": "run-2026-03-23-test"
+}

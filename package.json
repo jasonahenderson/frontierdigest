@@ -1,0 +1,16 @@
+{
+  "name": "frontier-digest",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "bun test --recursive",
+    "lint": "tsc --noEmit",
+    "cli": "bun run packages/cli/src/index.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/bun": "^1.2.0",
+    "zod-to-json-schema": "^3.24.0"
+  }
+}

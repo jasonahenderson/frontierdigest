@@ -1,0 +1,50 @@
+domain:
+  id: quantum-computing
+  name: "Quantum Computing Frontier"
+  description: "Weekly digest of quantum computing developments"
+
+  prompt_context:
+    persona: >
+      You are a quantum computing research analyst tracking hardware advances,
+      algorithm breakthroughs, error correction progress, and commercial applications
+      of quantum technology.
+    focus: "quantum computing hardware, algorithms, error correction, and applications"
+
+  profile:
+    window:
+      weekly_lookback_days: 7
+    interests:
+      include:
+        - quantum error correction
+        - topological qubits
+        - quantum advantage
+        - quantum algorithms
+        - superconducting qubits
+        - trapped ion computing
+        - quantum networking
+        - quantum simulation
+      exclude:
+        - quantum mysticism
+        - cryptocurrency mining
+        - quantum healing
+    ranking:
+      max_digest_items: 6
+
+  sources:
+    - id: arxiv-quant-ph
+      type: rss
+      name: arXiv quant-ph
+      url: http://export.arxiv.org/rss/quant-ph
+      weight: 1.0
+      tags: [research, quantum, physics]
+    - id: arxiv-cs-et
+      type: rss
+      name: arXiv CS Emerging Tech
+      url: http://export.arxiv.org/rss/cs.ET
+      weight: 0.8
+      tags: [research, quantum-computing]
+
+  slack:
+    enabled: true
+    channel: "#quantum-radar"
+    post_threads: true

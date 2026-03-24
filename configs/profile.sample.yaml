@@ -1,0 +1,40 @@
+profile: ai-frontier
+
+window:
+  weekly_lookback_days: 7
+
+interests:
+  include:
+    - long horizon agents
+    - context engineering
+    - memory systems
+    - tool use
+    - evaluation
+    - inference infrastructure
+    - reasoning models
+    - code generation
+    - multimodal models
+    - open source models
+  exclude:
+    - generic consumer AI apps
+    - funding-only announcements
+    - cryptocurrency/blockchain
+    - gaming AI
+
+ranking:
+  max_digest_items: 8
+  primary_source_bonus: 0.2
+  recency_weight: 0.2
+  relevance_weight: 0.4
+  source_weight: 0.2
+  reinforcement_weight: 0.2
+
+outputs:
+  root_dir: ./data
+  write_markdown: true
+  write_json: true
+
+slack:
+  enabled: true
+  channel: "#ai-radar"
+  post_threads: true

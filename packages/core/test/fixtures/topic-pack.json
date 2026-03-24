@@ -1,0 +1,23 @@
+{
+  "id": "topic-pack-agent-memory",
+  "topic_key": "topic-agent-memory",
+  "title": "Hierarchical Memory Architectures for AI Agents",
+  "expanded_summary": "Research teams have independently developed hierarchical memory systems that partition agent memory into working, episodic, and semantic tiers. These architectures address the fundamental challenge of maintaining coherent context over thousands of agent steps without exceeding context window limits. The key innovation is a tiered retrieval mechanism that selectively surfaces relevant memories based on task context, achieving state-of-the-art results on long-horizon benchmarks.",
+  "why_included": [
+    "Agent memory systems are a core interest matching the profile's 'agents' and 'memory systems' interests",
+    "Multiple independent sources reported on the same architectural pattern, indicating broad community interest",
+    "The work directly addresses a key limitation blocking production agent deployments"
+  ],
+  "what_is_new": [
+    "Tiered memory separation (working vs episodic vs semantic) is now validated at scale",
+    "Novel retrieval mechanisms outperform flat context window approaches",
+    "State-of-the-art results on long-horizon task benchmarks"
+  ],
+  "uncertainties": [
+    "Unclear how these systems perform on truly novel task domains outside training distribution",
+    "Computational overhead of hierarchical retrieval at inference time is not well characterized",
+    "Reproducibility details are still pending for some claimed results"
+  ],
+  "source_bundle_ref": "source-bundle-agent-memory",
+  "related_topics": ["topic-context-engineering", "topic-agent-benchmarks"]
+}

@@ -1,0 +1,83 @@
+domain:
+  id: ai-frontier
+  name: "AI Frontier Digest"
+  description: "Weekly digest of frontier AI developments"
+
+  prompt_context:
+    persona: >
+      You are an AI frontier research analyst tracking the most significant
+      developments in artificial intelligence, machine learning, and autonomous systems.
+      You focus on what matters to practitioners building AI systems.
+    focus: "frontier AI research, models, agents, and infrastructure"
+
+  profile:
+    window:
+      weekly_lookback_days: 7
+    interests:
+      include:
+        - long horizon agents
+        - context engineering
+        - memory systems
+        - tool use
+        - evaluation
+        - inference infrastructure
+        - reasoning models
+        - code generation
+        - multimodal models
+        - open source models
+      exclude:
+        - generic consumer AI apps
+        - funding-only announcements
+        - cryptocurrency/blockchain
+        - gaming AI
+    ranking:
+      max_digest_items: 8
+
+  sources:
+    - id: anthropic-news
+      type: rss
+      name: Anthropic News
+      url: https://www.anthropic.com/rss.xml
+      weight: 1.0
+      tags: [agents, reasoning, safety]
+    - id: openai-blog
+      type: rss
+      name: OpenAI Blog
+      url: https://openai.com/blog/rss.xml
+      weight: 1.0
+      tags: [models, agents, reasoning]
+    - id: deepmind-blog
+      type: rss
+      name: Google DeepMind Blog
+      url: https://deepmind.google/blog/rss.xml
+      weight: 1.0
+      tags: [models, reasoning, science]
+    - id: huggingface-blog
+      type: rss
+      name: Hugging Face Blog
+      url: https://huggingface.co/blog/feed.xml
+      weight: 0.9
+      tags: [open-source, models, tooling]
+    - id: latent-space
+      type: rss
+      name: Latent Space Podcast
+      url: https://www.latent.space/feed
+      weight: 0.8
+      tags: [analysis, tooling, agents]
+    - id: simon-willison
+      type: rss
+      name: Simon Willison's Weblog
+      url: https://simonwillison.net/atom/everything/
+      weight: 0.8
+      tags: [tooling, agents, analysis]
+    - id: arxiv-cs-ai
+      type: rss
+      name: arXiv CS.AI
+      url: http://export.arxiv.org/rss/cs.AI
+      weight: 0.6
+      tags: [research, models, reasoning]
+
+  slack:
+    enabled: true
+    channel: "#ai-radar"
+    post_threads: true

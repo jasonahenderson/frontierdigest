@@ -1,0 +1,15 @@
+{
+  "name": "@frontier-digest/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "bin": {
+    "frontier-digest": "./src/index.ts"
+  },
+  "dependencies": {
+    "@frontier-digest/core": "workspace:*",
+    "citty": "^0.1.6",
+    "consola": "^3.4.0",
+    "yaml": "^2.7.0"
+  }
+}

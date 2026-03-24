@@ -1,0 +1,20 @@
+# Slack configuration for Frontier Digest
+#
+# Required environment variables:
+#   SLACK_BOT_TOKEN     - Bot User OAuth Token (xoxb-...)
+#   SLACK_SIGNING_SECRET - Signing secret from app credentials
+#   SLACK_APP_TOKEN     - App-level token for socket mode (xapp-...), optional
+#
+# Slack App Setup:
+#   1. Create a new Slack app at https://api.slack.com/apps
+#   2. Enable Socket Mode (recommended for development)
+#   3. Add Bot Token Scopes: chat:write, channels:read, groups:read
+#   4. Enable Interactivity & Shortcuts
+#   5. Install to workspace and invite bot to the target channel
+
+slack:
+  bot_token_env: SLACK_BOT_TOKEN
+  signing_secret_env: SLACK_SIGNING_SECRET
+  app_token_env: SLACK_APP_TOKEN
+  channel: "#ai-radar"
+  post_threads: true

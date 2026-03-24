@@ -1,0 +1,39 @@
+[
+  {
+    "id": "digest-entry-001",
+    "title": "Hierarchical Memory Systems Enable Long-Horizon Agent Tasks",
+    "summary": "Multiple research teams have converged on hierarchical memory architectures that separate working, episodic, and semantic memory stores for AI agents. These systems allow agents to maintain coherent context over thousands of steps, achieving state-of-the-art results on long-horizon benchmarks.",
+    "why_it_matters": "Long-context memory is the key bottleneck for deploying agents on complex, multi-step tasks. Hierarchical memory could unlock a new class of reliable agentic applications.",
+    "novelty_label": "high",
+    "confidence_label": "high",
+    "source_count": 2,
+    "primary_source_count": 1,
+    "source_ids": ["a1b2c3d4e5f60001", "a1b2c3d4e5f60002"],
+    "topic_ids": ["topic-agent-memory"],
+    "comparison_ref": "topic_agent_memory_2026_03_16"
+  },
+  {
+    "id": "digest-entry-002",
+    "title": "Context Engineering Matures as a Production Discipline",
+    "summary": "Teams shipping LLM applications at scale are converging on best practices for context window engineering, including dynamic context assembly, prompt caching, and priority-based truncation. RAG pipelines are also seeing improvements with hybrid search and re-ranking strategies.",
+    "why_it_matters": "Context engineering directly impacts LLM application quality and cost. The emergence of shared best practices signals the discipline is maturing beyond ad-hoc prompt tuning.",
+    "novelty_label": "medium",
+    "confidence_label": "high",
+    "source_count": 3,
+    "primary_source_count": 1,
+    "source_ids": ["a1b2c3d4e5f60003", "a1b2c3d4e5f60004", "a1b2c3d4e5f60008"],
+    "topic_ids": ["topic-context-engineering"]
+  },
+  {
+    "id": "digest-entry-003",
+    "title": "Tool-Using Agents and Multi-Agent Systems Show Rapid Benchmark Gains",
+    "summary": "Tool-using agents have achieved record SWE-bench scores, resolving over 60% of issues autonomously. Meanwhile, multi-agent coordination benchmarks show significantly improved task decomposition and delegation compared to six months ago.",
+    "why_it_matters": "Rapid benchmark progress in agentic systems suggests these tools are approaching practical reliability thresholds for software development and other complex workflows.",
+    "novelty_label": "high",
+    "confidence_label": "medium",
+    "source_count": 3,
+    "primary_source_count": 2,
+    "source_ids": ["a1b2c3d4e5f60005", "a1b2c3d4e5f60007", "a1b2c3d4e5f60009"],
+    "topic_ids": ["topic-agent-benchmarks"]
+  }
+]

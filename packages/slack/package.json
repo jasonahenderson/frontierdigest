@@ -1,0 +1,13 @@
+{
+  "name": "@frontier-digest/slack",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@frontier-digest/core": "workspace:*",
+    "@slack/bolt": "^4.1.0",
+    "@slack/types": "^2.20.0",
+    "@slack/web-api": "^7.0.0",
+    "consola": "^3.4.0"
+  }
+}

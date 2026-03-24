@@ -1,0 +1,25 @@
+{
+  "id": "source-bundle-agent-memory",
+  "topic_key": "topic-agent-memory",
+  "date": "2026-03-23",
+  "sources": [
+    {
+      "item_id": "a1b2c3d4e5f60001",
+      "title": "New Advances in Long-Context Agent Memory Systems",
+      "url": "https://example.com/memory-systems-2026",
+      "source_name": "Test Source One",
+      "is_primary": true,
+      "excerpt": "Recent work on agent memory architectures shows promising results for long-horizon task completion. Teams at major labs have been developing hierarchical memory systems that allow agents to maintain context over thousands of steps....",
+      "relevance_note": "Primary source describing the hierarchical memory architecture and its tiered approach to working, episodic, and semantic memory stores."
+    },
+    {
+      "item_id": "a1b2c3d4e5f60002",
+      "title": "Hierarchical Memory for AI Agents: A Breakthrough",
+      "url": "https://example.com/hierarchical-memory-agents",
+      "source_name": "Test Source Two",
+      "is_primary": false,
+      "excerpt": "A new paper demonstrates hierarchical memory architectures for AI agents that achieve state-of-the-art results on long-horizon task benchmarks. The system separates working memory from episodic and semantic memory stores....",
+      "relevance_note": "Corroborating source from a different outlet covering the same hierarchical memory research with additional benchmark details."
+    }
+  ]
+}

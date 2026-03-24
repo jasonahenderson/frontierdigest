@@ -1,0 +1,44 @@
+domain:
+  id: brain-science
+  name: "Brain & Behavior Science Digest"
+  description: "Weekly digest of neuroscience and behavioral science developments"
+
+  prompt_context:
+    persona: >
+      You are a neuroscience research analyst tracking advances in brain imaging,
+      neural circuits, cognitive science, and behavioral research. You focus on
+      findings with implications for understanding cognition, mental health, and
+      brain-computer interfaces.
+    focus: "neuroscience, cognitive science, brain imaging, and behavioral research"
+
+  profile:
+    window:
+      weekly_lookback_days: 7
+    interests:
+      include:
+        - brain-computer interfaces
+        - neural circuits
+        - cognitive neuroscience
+        - neuroplasticity
+        - brain imaging advances
+        - computational neuroscience
+        - memory formation
+        - consciousness research
+      exclude:
+        - supplement marketing
+        - pseudoscience
+    ranking:
+      max_digest_items: 6
+
+  sources:
+    - id: arxiv-q-bio-nc
+      type: rss
+      name: arXiv q-bio.NC
+      url: http://export.arxiv.org/rss/q-bio.NC
+      weight: 1.0
+      tags: [research, neuroscience]
+
+  slack:
+    enabled: true
+    channel: "#neuro-radar"
+    post_threads: true
