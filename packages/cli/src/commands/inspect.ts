@@ -1,11 +1,8 @@
-import { defineCommand } from "citty";
+import { defineGroup } from "../helpers/define-group.js";
 
-export default defineCommand({
-  meta: {
-    name: "inspect",
-    description: "Inspect pipeline artifacts",
-  },
-  subCommands: {
+export default defineGroup(
+  { name: "inspect", description: "Inspect pipeline artifacts" },
+  {
     run: () => import("./inspect-run.js").then(m => m.default),
   },
-});
+);

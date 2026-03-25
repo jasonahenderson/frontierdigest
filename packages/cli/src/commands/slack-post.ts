@@ -1,11 +1,8 @@
-import { defineCommand } from "citty";
+import { defineGroup } from "../helpers/define-group.js";
 
-export default defineCommand({
-  meta: {
-    name: "post",
-    description: "Post digests to Slack",
-  },
-  subCommands: {
+export default defineGroup(
+  { name: "post", description: "Post digests to Slack" },
+  {
     weekly: () => import("./slack-post-weekly.js").then(m => m.default),
   },
-});
+);

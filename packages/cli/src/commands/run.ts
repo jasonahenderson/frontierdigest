@@ -1,11 +1,8 @@
-import { defineCommand } from "citty";
+import { defineGroup } from "../helpers/define-group.js";
 
-export default defineCommand({
-  meta: {
-    name: "run",
-    description: "Run the full pipeline",
-  },
-  subCommands: {
+export default defineGroup(
+  { name: "run", description: "Run the full pipeline" },
+  {
     weekly: () => import("./run-weekly.js").then(m => m.default),
   },
-});
+);

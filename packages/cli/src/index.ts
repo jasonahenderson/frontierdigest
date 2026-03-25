@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
-import { defineCommand, runMain } from "citty";
+import { runMain } from "citty";
+import { defineGroup } from "./helpers/define-group.js";
 
-const main = defineCommand({
-  meta: {
+const main = defineGroup(
+  {
     name: "frontier-digest",
-    version: "0.1.0",
     description: "Domain-configurable weekly research digest system",
   },
-  subCommands: {
+  {
     init: () => import("./commands/init.js").then(m => m.default),
     ingest: () => import("./commands/ingest.js").then(m => m.default),
     digest: () => import("./commands/digest.js").then(m => m.default),
@@ -19,6 +19,6 @@ const main = defineCommand({
     list: () => import("./commands/list.js").then(m => m.default),
     inspect: () => import("./commands/inspect.js").then(m => m.default),
   },
-});
+);
 
 runMain(main);

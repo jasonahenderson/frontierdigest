@@ -1,11 +1,8 @@
-import { defineCommand } from "citty";
+import { defineGroup } from "../helpers/define-group.js";
 
-export default defineCommand({
-  meta: {
-    name: "diff",
-    description: "Compare digests",
-  },
-  subCommands: {
+export default defineGroup(
+  { name: "diff", description: "Compare digests" },
+  {
     weekly: () => import("./diff-weekly.js").then(m => m.default),
   },
-});
+);

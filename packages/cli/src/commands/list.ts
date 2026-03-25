@@ -1,11 +1,8 @@
-import { defineCommand } from "citty";
+import { defineGroup } from "../helpers/define-group.js";
 
-export default defineCommand({
-  meta: {
-    name: "list",
-    description: "List resources",
-  },
-  subCommands: {
+export default defineGroup(
+  { name: "list", description: "List resources" },
+  {
     digests: () => import("./list-digests.js").then(m => m.default),
   },
-});
+);
