@@ -45,13 +45,22 @@ export async function synthesize(
     `Synthesizing digest for ${clusters.length} clusters (${date})`,
   );
 
-  // --- Step 1: Generate digest entries for each cluster (parallel) ---
-  consola.info("Step 1: Generating digest entries...");
-  const entryOutputs = await Promise.all(
-    clusters.map((cluster) =>
-      generateDigestEntry(cluster, interestList, profileName, resolvedPromptsDir, promptContext, llmConfig),
-    ),
-  );
+  // --- Step 1: Generate digest entries for each cluster ---
+  // Sequential for local models (Ollama), parallel for cloud APIs
+  const isLocal = llmConfig?.provider === "ollama";
+  consola.info(`Step 1: Generating digest entries${isLocal ? " (sequential — local model)" : ""}...`);
+  const entryOutputs: Awaited<ReturnType<typeof generateDigestEntry>>[] = [];
+  if (isLocal) {
+    for (const c of clusters) {
+      entryOutputs.push(await generateDigestEntry(c, interestList, profileName, resolvedPromptsDir, promptContext, llmConfig));
+    }
+  } else {
+    entryOutputs.push(...await Promise.all(
+      clusters.map((c) =>
+        generateDigestEntry(c, interestList, profileName, resolvedPromptsDir, promptContext, llmConfig),
+      ),
+    ));
+  }
 
   // Assemble full DigestEntry objects
   const entries: DigestEntry[] = entryOutputs.map((output, i) => {
@@ -70,28 +79,41 @@ export async function synthesize(
     };
   });
 
-  // --- Step 2: Generate topic expansions (parallel) ---
-  consola.info("Step 2: Generating topic expansions...");
-  const expandOutputs = await Promise.all(
-    entries.map((entry, i) =>
-      generateTopicExpansion(
-        entry,
-        clusters[i],
-        interestList,
-        resolvedPromptsDir,
-        promptContext,
-        llmConfig,
-      ),
-    ),
-  );
+  // --- Step 2: Generate topic expansions (graceful failures) ---
+  consola.info(`Step 2: Generating topic expansions${isLocal ? " (sequential)" : ""}...`);
+  const defaultExpansion = { expanded_summary: "", why_included: [], what_is_new: [], uncertainties: [], related_topics: [] };
+  const expandOutputs: Awaited<ReturnType<typeof generateTopicExpansion>>[] = [];
+  for (let i = 0; i < entries.length; i++) {
+    try {
+      if (isLocal) {
+        expandOutputs.push(await generateTopicExpansion(entries[i], clusters[i], interestList, resolvedPromptsDir, promptContext, llmConfig));
+      } else {
+        expandOutputs.push(await generateTopicExpansion(entries[i], clusters[i], interestList, resolvedPromptsDir, promptContext, llmConfig));
+      }
+    } catch (err) {
+      consola.warn(`Topic expansion failed for "${entries[i].title}", using fallback`);
+      expandOutputs.push({ ...defaultExpansion, expanded_summary: entries[i].summary });
+    }
+  }
 
-  // --- Step 3: Generate source bundles (parallel) ---
-  consola.info("Step 3: Generating source bundles...");
-  const sourceBundleSources = await Promise.all(
-    clusters.map((cluster, i) =>
-      generateSourceBundle(cluster, entries[i].title, resolvedPromptsDir, promptContext, llmConfig),
-    ),
-  );
+  // --- Step 3: Generate source bundles (graceful failures) ---
+  consola.info(`Step 3: Generating source bundles${isLocal ? " (sequential)" : ""}...`);
+  const sourceBundleSources: Awaited<ReturnType<typeof generateSourceBundle>>[] = [];
+  for (let i = 0; i < clusters.length; i++) {
+    try {
+      sourceBundleSources.push(await generateSourceBundle(clusters[i], entries[i].title, resolvedPromptsDir, promptContext, llmConfig));
+    } catch (err) {
+      consola.warn(`Source bundle failed for "${entries[i].title}", using fallback`);
+      sourceBundleSources.push(clusters[i].items.slice(0, 5).map(si => ({
+        item_id: si.item.id,
+        title: si.item.title,
+        url: si.item.url,
+        source_name: si.item.source_name,
+        is_primary: false,
+        excerpt: si.item.excerpt,
+      })));
+    }
+  }
 
   // Assemble SourceBundle and TopicPack objects
   const sourceBundles: SourceBundle[] = sourceBundleSources.map(
@@ -115,22 +137,19 @@ export async function synthesize(
     related_topics: output.related_topics,
   }));
 
-  // --- Step 4: Generate comparisons with previous week (parallel) ---
+  // --- Step 4: Generate comparisons with previous week (graceful) ---
   consola.info("Step 4: Generating week-over-week comparisons...");
-  const comparisons = await Promise.all(
-    entries.map(async (entry, i) => {
-      const cluster = clusters[i];
-      const previousTopic = await store.getTopicPack(cluster.label);
-      return generateComparison(
-        entry,
-        cluster,
-        previousTopic,
-        resolvedPromptsDir,
-        promptContext,
-        llmConfig,
-      );
-    }),
-  );
+  const defaultComparison = { previous_framing: "N/A", current_framing: "", detected_shifts: [], trend_interpretation: "First week of tracking." };
+  const comparisons: Awaited<ReturnType<typeof generateComparison>>[] = [];
+  for (let i = 0; i < entries.length; i++) {
+    try {
+      const previousTopic = await store.getTopicPack(clusters[i].label);
+      comparisons.push(await generateComparison(entries[i], clusters[i], previousTopic, resolvedPromptsDir, promptContext, llmConfig));
+    } catch {
+      consola.warn(`Comparison failed for "${entries[i].title}", using fallback`);
+      comparisons.push({ ...defaultComparison, current_framing: entries[i].summary });
+    }
+  }
 
   // Attach comparison refs to entries
   for (let i = 0; i < entries.length; i++) {
@@ -147,19 +166,24 @@ export async function synthesize(
       profile.window.weekly_lookback_days * 24 * 60 * 60 * 1000,
   ).toISOString();
 
-  const summaryOutput = await generateWeeklySummary(
-    {
-      entries,
-      windowStart,
-      windowEnd,
-      rawItemCount,
-      canonicalItemCount,
-      topItemCount: entries.length,
-    },
-    resolvedPromptsDir,
-    promptContext,
-    llmConfig,
-  );
+  let summaryOutput = { summary: `Weekly digest: ${entries.length} topics from ${rawItemCount} sources.`, new_theme_count: entries.length, accelerating_count: 0, cooling_count: 0 };
+  try {
+    summaryOutput = await generateWeeklySummary(
+      {
+        entries,
+        windowStart,
+        windowEnd,
+        rawItemCount,
+        canonicalItemCount,
+        topItemCount: entries.length,
+      },
+      resolvedPromptsDir,
+      promptContext,
+      llmConfig,
+    );
+  } catch {
+    consola.warn("Weekly summary generation failed, using fallback");
+  }
 
   // --- Step 6: Assemble WeeklyDigest ---
   const digest: WeeklyDigest = {
@@ -184,7 +208,7 @@ export async function synthesize(
 }
 
 // Re-export all functions and types
-export { llmGenerate, createModel, resolveConfig } from "./llm.js";
+export { llmGenerate, createModel, resolveConfig, extractJson } from "./llm.js";
 export { loadPrompt } from "./prompt-loader.js";
 export {
   generateWeeklySummary,

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { TopicCluster, PromptContext, LLMConfig } from "../types/index.js";
 import { loadPrompt } from "./prompt-loader.js";
-import { llmGenerate } from "./llm.js";
+import { llmGenerate, extractJson } from "./llm.js";
 import { consola } from "consola";
 
 const DigestEntryOutputSchema = z.object({
@@ -24,12 +24,27 @@ export async function generateDigestEntry(
 ): Promise<DigestEntryOutput> {
   consola.info(`Generating digest entry for cluster: ${cluster.label}`);
 
+  // Truncate cluster data to avoid overwhelming the LLM
+  const trimmedCluster = {
+    label: cluster.label,
+    tags: cluster.tags,
+    aggregate_score: cluster.aggregate_score,
+    primary_source_count: cluster.primary_source_count,
+    items: cluster.items.slice(0, 5).map(si => ({
+      title: si.item.title,
+      source_name: si.item.source_name,
+      excerpt: si.item.excerpt,
+      tags: si.item.tags,
+      total_score: si.total_score,
+    })),
+  };
+
   const { system, user } = await loadPrompt(
     "digest-entry",
     {
       profile_name: profileName,
       interest_list: interestList.join(", "),
-      cluster_json: JSON.stringify(cluster, null, 2),
+      cluster_json: JSON.stringify(trimmedCluster, null, 2),
     },
     promptsDir,
     promptContext,
@@ -37,14 +52,11 @@ export async function generateDigestEntry(
 
   const raw = await llmGenerate(system, user, { llmConfig });
 
-  // Strip markdown fences if present
-  const cleaned = raw.replace(/^```(?:json)?\s*\n?/m, "").replace(/\n?```\s*$/m, "").trim();
-
   let jsonParsed: unknown;
   try {
-    jsonParsed = JSON.parse(cleaned);
+    jsonParsed = extractJson(raw);
   } catch {
-    consola.error(`LLM returned non-JSON for cluster: ${cluster.label}`);
+    consola.error(`LLM returned non-JSON for cluster: ${cluster.label}: ${raw.slice(0, 200)}`);
     throw new Error(`Failed to parse LLM response as JSON for cluster: ${cluster.label}`);
   }
 

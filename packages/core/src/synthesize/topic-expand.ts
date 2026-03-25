@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { DigestEntry, TopicCluster, PromptContext, LLMConfig } from "../types/index.js";
 import { loadPrompt } from "./prompt-loader.js";
-import { llmGenerate } from "./llm.js";
+import { llmGenerate, extractJson } from "./llm.js";
 import { consola } from "consola";
 
 const TopicExpandOutputSchema = z.object({
@@ -24,12 +24,23 @@ export async function generateTopicExpansion(
 ): Promise<TopicExpandOutput> {
   consola.info(`Generating topic expansion for: ${entry.title}`);
 
+  const trimmedCluster = {
+    label: cluster.label,
+    tags: cluster.tags,
+    items: cluster.items.slice(0, 5).map(si => ({
+      title: si.item.title,
+      source_name: si.item.source_name,
+      excerpt: si.item.excerpt,
+      tags: si.item.tags,
+    })),
+  };
+
   const { system, user } = await loadPrompt(
     "topic-expand",
     {
       interest_list: interestList.join(", "),
       entry_json: JSON.stringify(entry, null, 2),
-      cluster_json: JSON.stringify(cluster, null, 2),
+      cluster_json: JSON.stringify(trimmedCluster, null, 2),
     },
     promptsDir,
     promptContext,
@@ -37,14 +48,11 @@ export async function generateTopicExpansion(
 
   const raw = await llmGenerate(system, user, { llmConfig });
 
-  // Strip markdown fences if present
-  const cleaned = raw.replace(/^```(?:json)?\s*\n?/m, "").replace(/\n?```\s*$/m, "").trim();
-
   let jsonParsed: unknown;
   try {
-    jsonParsed = JSON.parse(cleaned);
+    jsonParsed = extractJson(raw);
   } catch {
-    consola.error(`LLM returned non-JSON for topic expansion: ${entry.title}`);
+    consola.error(`LLM returned non-JSON for topic expansion: ${entry.title}: ${raw.slice(0, 200)}`);
     throw new Error(`Failed to parse LLM response as JSON for topic expansion: ${entry.title}`);
   }
 

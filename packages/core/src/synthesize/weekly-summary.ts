@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { DigestEntry, PromptContext, LLMConfig } from "../types/index.js";
 import { loadPrompt } from "./prompt-loader.js";
-import { llmGenerate } from "./llm.js";
+import { llmGenerate, extractJson } from "./llm.js";
 import { consola } from "consola";
 
 export interface WeeklySummaryInput {
@@ -55,14 +55,11 @@ export async function generateWeeklySummary(
 
   const raw = await llmGenerate(system, user, { llmConfig });
 
-  // Strip markdown fences if present
-  const cleaned = raw.replace(/^```(?:json)?\s*\n?/m, "").replace(/\n?```\s*$/m, "").trim();
-
   let jsonParsed: unknown;
   try {
-    jsonParsed = JSON.parse(cleaned);
+    jsonParsed = extractJson(raw);
   } catch {
-    consola.error("LLM returned non-JSON for weekly summary");
+    consola.error(`LLM returned non-JSON for weekly summary: ${raw.slice(0, 200)}`);
     throw new Error("Failed to parse LLM response as JSON for weekly summary");
   }
 
