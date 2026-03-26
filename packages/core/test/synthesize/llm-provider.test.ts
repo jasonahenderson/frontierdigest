@@ -132,10 +132,19 @@ describe("createModel", () => {
     expect(model).toBeDefined();
   });
 
-  test("throws for openai-compatible without base_url", () => {
-    expect(() => createModel({ provider: "openai-compatible" })).toThrow(
-      "base_url",
-    );
+  test("throws for openai-compatible without base_url", async () => {
+    // Spawn a subprocess to test this in isolation, since mock.module from
+    // pipeline tests leaks into the global module cache in Bun's test runner.
+    const proc = Bun.spawn([process.argv[0], "-e", `
+      const { createModel } = await import("./packages/core/src/synthesize/llm.ts");
+      try { createModel({ provider: "openai-compatible" }); process.exit(1); }
+      catch (e) { if (e.message.includes("base_url")) process.exit(0); process.exit(2); }
+    `], {
+      cwd: new URL("../../../../", import.meta.url).pathname,
+      env: { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "" },
+    });
+    const exitCode = await proc.exited;
+    expect(exitCode).toBe(0);
   });
 
   test("creates a model for openai-compatible with base_url", () => {

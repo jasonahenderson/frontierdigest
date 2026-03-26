@@ -1,0 +1,16 @@
+{
+  "expanded_summary": "Research teams have independently developed hierarchical memory systems that partition agent memory into working, episodic, and semantic tiers. These architectures address the fundamental challenge of maintaining coherent context over thousands of agent steps.",
+  "why_included": [
+    "Agent memory systems are a core interest matching the profile's agents and memory-systems interests",
+    "Multiple independent sources reported on the same architectural pattern"
+  ],
+  "what_is_new": [
+    "Tiered memory separation is now validated at scale",
+    "Novel retrieval mechanisms outperform flat context window approaches"
+  ],
+  "uncertainties": [
+    "Unclear how these systems perform on truly novel task domains",
+    "Computational overhead of hierarchical retrieval is not well characterized"
+  ],
+  "related_topics": ["context-engineering", "agent-benchmarks"]
+}

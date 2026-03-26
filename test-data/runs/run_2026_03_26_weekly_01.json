@@ -1,0 +1,96 @@
+{
+  "id": "run_2026_03_26_weekly_01",
+  "started_at": "2026-03-26T22:52:13.929Z",
+  "status": "completed",
+  "profile_snapshot": {
+    "profile": "test-profile",
+    "window": {
+      "weekly_lookback_days": 7
+    },
+    "interests": {
+      "include": [
+        "agents",
+        "context engineering",
+        "memory systems"
+      ],
+      "exclude": [
+        "cryptocurrency"
+      ]
+    },
+    "ranking": {
+      "max_digest_items": 3,
+      "primary_source_bonus": 0.2,
+      "recency_weight": 0.2,
+      "relevance_weight": 0.4,
+      "source_weight": 0.2,
+      "reinforcement_weight": 0.2
+    },
+    "outputs": {
+      "root_dir": "./test-data",
+      "write_markdown": true,
+      "write_json": true
+    },
+    "slack": {
+      "enabled": false,
+      "channel": "#test",
+      "post_threads": false
+    }
+  },
+  "steps": [
+    {
+      "name": "ingest",
+      "status": "completed",
+      "started_at": "2026-03-26T22:52:13.929Z",
+      "completed_at": "2026-03-26T22:52:13.992Z",
+      "item_count": 0
+    },
+    {
+      "name": "normalize",
+      "status": "completed",
+      "started_at": "2026-03-26T22:52:13.992Z",
+      "completed_at": "2026-03-26T22:52:13.992Z",
+      "item_count": 0
+    },
+    {
+      "name": "dedupe",
+      "status": "completed",
+      "started_at": "2026-03-26T22:52:13.992Z",
+      "completed_at": "2026-03-26T22:52:13.992Z",
+      "item_count": 0
+    },
+    {
+      "name": "score",
+      "status": "completed",
+      "started_at": "2026-03-26T22:52:13.992Z",
+      "completed_at": "2026-03-26T22:52:13.992Z",
+      "item_count": 0
+    },
+    {
+      "name": "cluster",
+      "status": "completed",
+      "started_at": "2026-03-26T22:52:13.992Z",
+      "completed_at": "2026-03-26T22:52:13.992Z",
+      "item_count": 0
+    },
+    {
+      "name": "synthesize",
+      "status": "completed",
+      "started_at": "2026-03-26T22:52:13.992Z",
+      "completed_at": "2026-03-26T22:52:13.992Z",
+      "item_count": 0
+    },
+    {
+      "name": "persist",
+      "status": "completed",
+      "started_at": "2026-03-26T22:52:13.992Z",
+      "completed_at": "2026-03-26T22:52:13.992Z",
+      "item_count": 0
+    },
+    {
+      "name": "save_manifest",
+      "status": "completed",
+      "started_at": "2026-03-26T22:52:13.993Z"
+    }
+  ],
+  "completed_at": "2026-03-26T22:52:13.993Z"
+}

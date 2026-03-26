@@ -1,0 +1,7 @@
+{
+  "title": "Agent Memory Systems Advance with Hierarchical Architectures",
+  "summary": "Multiple research teams have converged on hierarchical memory architectures for AI agents, separating working, episodic, and semantic memory stores to maintain context over long-horizon tasks.",
+  "why_it_matters": "Long-context memory is a key bottleneck for deploying agents on complex, multi-step tasks. Hierarchical memory could unlock a new class of reliable agentic applications.",
+  "novelty_label": "high",
+  "confidence_label": "high"
+}

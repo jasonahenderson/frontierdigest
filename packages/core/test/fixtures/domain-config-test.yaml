@@ -1,0 +1,50 @@
+domain:
+  id: test-domain
+  name: "Test Domain"
+  description: "Test domain config for integration tests"
+
+  prompt_context:
+    persona: "You are a test analyst."
+    focus: "test topics for integration testing"
+
+  profile:
+    window:
+      weekly_lookback_days: 30
+    interests:
+      include: [agents, memory-systems, context-engineering]
+      exclude: [cryptocurrency]
+    ranking:
+      max_digest_items: 3
+      primary_source_bonus: 0.2
+      recency_weight: 0.2
+      relevance_weight: 0.4
+      source_weight: 0.2
+      reinforcement_weight: 0.2
+    outputs:
+      root_dir: ./data/test-domain
+      write_markdown: false
+      write_json: true
+
+  sources:
+    - id: test-feed-1
+      type: rss
+      name: "Test Feed One"
+      url: "http://localhost:9999/feed1.xml"
+      weight: 1.0
+      tags: [test, ai]
+    - id: test-feed-2
+      type: rss
+      name: "Test Feed Two"
+      url: "http://localhost:9999/feed2.xml"
+      weight: 0.8
+      tags: [test, agents]
+
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.3
+
+  slack:
+    enabled: false
+    channel: "#test-channel"
+    post_threads: false

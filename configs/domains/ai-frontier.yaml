@@ -78,8 +78,10 @@ domain:
       tags: [research, models, reasoning]
 
   llm:
-    provider: anthropic
-    model: claude-sonnet-4-20250514
+    provider: ollama
+    model: llama3.1
+    # provider: anthropic
+    # model: claude-sonnet-4-20250514
 
   slack:
     enabled: true
