@@ -9,6 +9,8 @@
     "test:integration": "bun test --recursive packages/core/test/integration packages/cli/test/integration",
     "test:e2e": "bun test --recursive packages/core/test/e2e packages/cli/test/e2e packages/slack/test/e2e",
     "test:llm": "FD_TEST_LLM=1 bun test packages/core/test/integration/synthesize-llm-live.test.ts",
+    "test:slack": "FD_TEST_SLACK=1 bun test packages/slack/test/e2e/slack-e2e.test.ts",
+    "test:gated": "FD_TEST_LLM=1 FD_TEST_SLACK=1 bun test packages/core/test/integration/synthesize-llm-live.test.ts packages/slack/test/e2e/slack-e2e.test.ts",
     "lint": "tsc --noEmit",
     "cli": "bun run packages/cli/src/index.ts"
   },

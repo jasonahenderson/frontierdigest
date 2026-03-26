@@ -28,11 +28,14 @@ pnpm test:integration
 # End-to-end tests only
 pnpm test:e2e
 
-# Live LLM tests (requires API key, costs money)
-FD_TEST_LLM=1 pnpm test:llm
+# Live LLM tests (requires API key in .env, costs money)
+pnpm test:llm
 
-# Live Slack tests (requires Slack tokens)
-FD_TEST_SLACK=1 FD_SLACK_BOT_TOKEN=xoxb-... FD_SLACK_TEST_CHANNEL=C... bun test packages/slack/test/e2e/
+# Live Slack tests (requires Slack tokens in .env)
+pnpm test:slack
+
+# All gated tests at once
+pnpm test:gated
 ```
 
 ### Environment Variables
@@ -241,21 +244,34 @@ Located in `packages/slack/test/helpers/`:
 
 These tests hit real external services and are **skipped by default**. They should be run manually in specific situations — never as part of routine CI.
 
-**Live LLM tests** — run after changing prompt templates, synthesis logic, or upgrading model versions:
+#### Setup
+
+Add the required credentials to your `.env` file (Bun auto-loads it during `bun test`):
 
 ```bash
-FD_TEST_LLM=1 pnpm test:llm
+# LLM tests — required for test:llm
+ANTHROPIC_API_KEY=sk-ant-...       # or the key for your configured provider
+
+# Slack tests — required for test:slack
+FD_SLACK_BOT_TOKEN=xoxb-...       # bot token with chat:write scope
+FD_SLACK_TEST_CHANNEL=C0123456    # dedicated test channel ID
 ```
 
-Requires `ANTHROPIC_API_KEY` (or the relevant provider key). Validates that real LLM output parses against Zod schemas.
+The gate flags (`FD_TEST_LLM`, `FD_TEST_SLACK`) are set by the scripts — do **not** add them to `.env` or they'll run on every `bun test`.
 
-**Live Slack tests** — run before deploying changes to Slack posting or block formatting:
+#### Running
 
 ```bash
-FD_TEST_SLACK=1 FD_SLACK_BOT_TOKEN=xoxb-... FD_SLACK_TEST_CHANNEL=C... bun test packages/slack/test/e2e/
+pnpm test:llm     # Live LLM tests only
+pnpm test:slack   # Live Slack tests only
+pnpm test:gated   # Both at once
 ```
 
-Requires a dedicated test channel to avoid noise in production channels.
+#### When to run
+
+**Live LLM tests** — after changing prompt templates, synthesis logic, or upgrading model versions. Validates that real LLM output parses against Zod schemas.
+
+**Live Slack tests** — before deploying changes to Slack posting or block formatting. Use a dedicated test channel to avoid noise.
 
 ### Open Question: Nightly LLM CI
 
