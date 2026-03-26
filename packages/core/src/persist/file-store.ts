@@ -254,10 +254,10 @@ export class FileStore implements Store {
   }
 
   /**
-   * Converts a digest ID like "weekly_2026_03_23" to "2026-03-23".
+   * Converts a digest ID like "weekly_2026_03_23" or "weekly-digest-2026-03-23" to "2026-03-23".
    */
   private digestIdToDate(digestId: string): string | null {
-    const match = digestId.match(/^weekly_(\d{4})_(\d{2})_(\d{2})$/);
+    const match = digestId.match(/(\d{4})[_-](\d{2})[_-](\d{2})$/);
     if (!match) return null;
     return `${match[1]}-${match[2]}-${match[3]}`;
   }
