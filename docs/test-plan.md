@@ -236,8 +236,35 @@ Located in `packages/slack/test/helpers/`:
 | **Unit only** (fast) | `pnpm test:unit` | Pre-commit hook |
 | **Integration** | `pnpm test:integration` | Every push/PR |
 | **E2E** | `pnpm test:e2e` | Every push/PR |
-| **Live LLM** | `FD_TEST_LLM=1 pnpm test:llm` | Nightly (budget-limited key) |
-| **Live Slack** | `FD_TEST_SLACK=1 ...` | Pre-release |
+
+### Gated Tests (Manual)
+
+These tests hit real external services and are **skipped by default**. They should be run manually in specific situations — never as part of routine CI.
+
+**Live LLM tests** — run after changing prompt templates, synthesis logic, or upgrading model versions:
+
+```bash
+FD_TEST_LLM=1 pnpm test:llm
+```
+
+Requires `ANTHROPIC_API_KEY` (or the relevant provider key). Validates that real LLM output parses against Zod schemas.
+
+**Live Slack tests** — run before deploying changes to Slack posting or block formatting:
+
+```bash
+FD_TEST_SLACK=1 FD_SLACK_BOT_TOKEN=xoxb-... FD_SLACK_TEST_CHANNEL=C... bun test packages/slack/test/e2e/
+```
+
+Requires a dedicated test channel to avoid noise in production channels.
+
+### Open Question: Nightly LLM CI
+
+A nightly CI job running `FD_TEST_LLM=1 pnpm test:llm` with a budget-limited API key would catch model drift or API-breaking changes between manual runs. Trade-offs:
+- **Pro:** Catches regressions from upstream model updates without developer action
+- **Con:** Ongoing API cost, needs key management in CI, flaky by nature (LLM output varies)
+- **Minimal version:** Run only `generateDigestEntry` — it covers the full prompt-to-Zod-parse path
+
+This is not yet implemented. Decide based on how frequently model/provider changes cause breakage.
 
 ### Timeouts
 

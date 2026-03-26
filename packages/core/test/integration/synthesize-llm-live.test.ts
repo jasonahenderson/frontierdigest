@@ -107,13 +107,17 @@ describe.skipIf(SKIP)("Synthesize live LLM integration", () => {
     { timeout: 60_000 },
   );
 
-  test("extractJson handles real-world LLM response with markdown fences", () => {
+});
+
+// These are pure unit tests — no LLM call needed, always run.
+describe("extractJson (unit)", () => {
+  test("handles real-world LLM response with markdown fences", () => {
     const fenced = '```json\n{"title": "Test", "summary": "Hello"}\n```';
     const result = extractJson(fenced) as { title: string };
     expect(result.title).toBe("Test");
   });
 
-  test("extractJson handles response with preamble text", () => {
+  test("handles response with preamble text", () => {
     const withPreamble = 'Here is the result:\n\n{"title": "Test", "value": 42}';
     const result = extractJson(withPreamble) as { title: string; value: number };
     expect(result.title).toBe("Test");
