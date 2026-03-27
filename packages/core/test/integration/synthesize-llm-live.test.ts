@@ -3,12 +3,19 @@ import { resolve } from "node:path";
 import { generateDigestEntry } from "../../src/synthesize/digest-entry.js";
 import { generateWeeklySummary } from "../../src/synthesize/weekly-summary.js";
 import { extractJson } from "../../src/synthesize/llm.js";
-import type { TopicCluster, DigestEntry } from "../../src/types/index.js";
+import type { TopicCluster, DigestEntry, LLMConfig } from "../../src/types/index.js";
 
 const PROMPTS_DIR = resolve(import.meta.dir, "../../../../prompts");
 
 // Gate all tests behind FD_TEST_LLM env var
 const SKIP = !process.env.FD_TEST_LLM;
+
+// Build LLM config from env vars, defaulting to Ollama for local testing.
+// Override with FD_LLM_PROVIDER / FD_LLM_MODEL to test other providers.
+const llmConfig: LLMConfig = {
+  provider: (process.env.FD_LLM_PROVIDER as LLMConfig["provider"]) ?? "ollama",
+  model: process.env.FD_LLM_MODEL ?? "llama3.1",
+};
 
 function makeTestCluster(): TopicCluster {
   return {
@@ -60,6 +67,8 @@ describe.skipIf(SKIP)("Synthesize live LLM integration", () => {
         ["agents", "memory-systems"],
         "test-profile",
         PROMPTS_DIR,
+        undefined,
+        llmConfig,
       );
 
       expect(result.title).toBeTypeOf("string");
@@ -98,6 +107,8 @@ describe.skipIf(SKIP)("Synthesize live LLM integration", () => {
           topItemCount: 1,
         },
         PROMPTS_DIR,
+        undefined,
+        llmConfig,
       );
 
       expect(result.summary).toBeTypeOf("string");

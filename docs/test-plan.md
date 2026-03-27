@@ -246,18 +246,26 @@ These tests hit real external services and are **skipped by default**. They shou
 
 #### Setup
 
-Add the required credentials to your `.env` file (Bun auto-loads it during `bun test`):
+Add any required credentials to your `.env` file (Bun auto-loads it during `bun test`).
+
+The gate flags (`FD_TEST_LLM`, `FD_TEST_SLACK`) are set by the scripts — do **not** add them to `.env` or they'll run on every `bun test`.
+
+**LLM tests** default to Ollama (`ollama/llama3.1`) — no API key needed if Ollama is running locally. To use a different provider:
 
 ```bash
-# LLM tests — required for test:llm
-ANTHROPIC_API_KEY=sk-ant-...       # or the key for your configured provider
+# .env — only needed for cloud providers
+ANTHROPIC_API_KEY=sk-ant-...       # if using Anthropic
+FD_LLM_PROVIDER=anthropic          # override provider (default: ollama)
+FD_LLM_MODEL=claude-sonnet-4-20250514  # override model (default: llama3.1)
+```
 
-# Slack tests — required for test:slack
+**Slack tests** require a bot token and test channel:
+
+```bash
+# .env
 FD_SLACK_BOT_TOKEN=xoxb-...       # bot token with chat:write scope
 FD_SLACK_TEST_CHANNEL=C0123456    # dedicated test channel ID
 ```
-
-The gate flags (`FD_TEST_LLM`, `FD_TEST_SLACK`) are set by the scripts — do **not** add them to `.env` or they'll run on every `bun test`.
 
 #### Running
 
